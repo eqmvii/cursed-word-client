@@ -3,10 +3,13 @@
     <h1>CursedWord</h1>
     <GuessList :currentGuess="currentGuess" :guesses="guesses" />
     <Keyboard/>
+    <hr/>
+    <EnableEthereumButton/>
   </div>
 </template>
 
 <script>
+import EnableEthereumButton from './EnableEthereumButton';
 import GuessList from './GuessList.vue';
 import Keyboard from './Keyboard.vue';
 
@@ -14,7 +17,8 @@ export default {
   name: 'CursedWord',
   components: {
     GuessList,
-    Keyboard
+    Keyboard,
+    EnableEthereumButton
   },
   props: {
     msg: String
