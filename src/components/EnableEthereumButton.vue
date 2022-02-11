@@ -1,5 +1,8 @@
 <template>
-  <button :disabled="disabled" class="enable-ethereum-button" @click="connect">Enable Ethereum</button>
+  <div v-if="showButton">
+    <button :disabled="disabled" class="enable-ethereum-button" @click="connect">Enable Ethereum</button>
+    <p v-if="errorText" class="error-text">{{ this.errorText }}</p>
+  </div>
 </template>
 
 <script>
@@ -8,27 +11,59 @@ export default {
   data() {
     return {
       disabled: false,
+      errorText: null,
+      showButton: false
     }
   },
   methods: {
     connect: async function () {
-      // TODO: check for window.ethereum
       this.disabled = true;
-      console.log('connect to the blockchain UGH');
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      console.log(accounts);
 
-      // TODO: Emit connected to enable guessing?
+      if (accounts && accounts.length > 0) {
+        // Connected! TODO ERIC: Emit someting?
+        this.showButton = false;
+      } else {
+        this.errorText = "Something went wrong.";
+        this.disabled = false;
+      }
     }
   },
-  async mounted () {
-    // TODO: safety for no metamask
-    // TODO: disable or hide entirely if user is already connected?
-    console.log('enable button mounting. Connected? ' + window.ethereum.isConnected());
+  mounted () {
+    if (typeof window.ethereum !== 'undefined' && !window.ethereum.selectedAddress) {
+      this.showButton = true;
+    } else {
+      this.disabled = true;
+      this.errorText = "Install MetaMask browser extension to connect to Cursed Word"
+    }
   }
 }
 </script>
 
 <style scoped>
+
+   /* Styles match MetaMask example */
+  .enable-ethereum-button {
+    background-color: #037dd6;
+    border: none;
+    color: #fff;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    box-shadow: 0 2px 4px -1px rgba(0,0,0,.2),0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12);
+    cursor: pointer;
+  }
+
+  .enable-ethereum-button:disabled {
+    cursor: wait;
+    background-color: grey;
+    box-shadow: 0 1px 2px -1px rgba(0,0,0,.2),0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12);
+  }
+
+  .error-text {
+    color: tomato;
+  }
 
 </style>

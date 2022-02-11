@@ -1,0 +1,28 @@
+<template>
+  <div class="spinning-icon"></div>
+</template>
+
+<script>
+// Taken from https://www.w3schools.com/howto/howto_css_loader.asp
+export default {
+  name: 'SpinningIcon',
+}
+</script>
+
+<style scoped>
+
+  .spinning-icon {
+    border: 6px solid #f3f3f3; /* Light grey */
+    border-top: 6px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1.5s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+</style>
