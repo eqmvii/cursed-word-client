@@ -21,7 +21,7 @@ export default {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
       if (accounts && accounts.length > 0) {
-        // Connected! TODO ERIC: Emit someting?
+        this.$emit('metamaskConnected');
         this.showButton = false;
       } else {
         this.errorText = "Something went wrong.";
@@ -32,6 +32,9 @@ export default {
   mounted () {
     if (typeof window.ethereum !== 'undefined' && !window.ethereum.selectedAddress) {
       this.showButton = true;
+    } else if (typeof window.ethereum !== 'undefined') {
+      // We're allready connected
+      this.$emit('metamaskConnected');
     } else {
       this.disabled = true;
       this.errorText = "Install MetaMask browser extension to connect to Cursed Word"
