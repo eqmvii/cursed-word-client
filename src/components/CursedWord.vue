@@ -19,7 +19,8 @@
 import Web3 from 'web3';
 
 // Compiled smart contract code for interaction
-const CursedWordV1 = require('../../contracts/CursedWordV1.json');
+const CURSED_WORD_V1_CONTRACT = require('../../contracts/CursedWordV1.json');
+const ACCOUNT = require('../../account.json');
 
 import EnableEthereumButton from './EnableEthereumButton';
 import GuessList from './GuessList.vue';
@@ -50,8 +51,7 @@ export default {
       resultsReceived: [],
       inputLocked: true,
       awaitingResult: false,
-      victory: false,
-      contractAddress: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9'
+      victory: false
     }
   },
   // TODO ERIC: Handle random connection to an in-progress game.
@@ -80,14 +80,18 @@ export default {
       this.web3 = new Web3(window.ethereum);
 
       this.connectedContract = new this.web3.eth.Contract(
-        CursedWordV1.abi,
+        CURSED_WORD_V1_CONTRACT.abi,
         // Must update each time contract is deployed! IT IS IN ANOTHER PLACE TOO
-        this.contractAddress // the deployed contract's address
+        ACCOUNT.deployedSmartContractAddress // the deployed contract's address
       );
 
       // Get the word number via the contract's public function
       // TODO: Set into state and use it
-      this.connectedContract.methods.wordNumber().call().then(result => console.log(result))
+      this.connectedContract.methods.wordNumber().call().then(result => console.log(result));
+      this.connectedContract.methods.getGuessInfoArray().call().then(result => console.log(result));
+      this.connectedContract.methods.getResultListArray().call().then(result => console.log(result));
+      // console.log(this.connectedContract.methods);
+
 
       setInterval(() => {
         // console.log('check for results...');
@@ -146,7 +150,7 @@ export default {
         // important for local transaction
         gasPrice: '674006785', // customizable by user during MetaMask confirmation.
         // gas: '100', // customizable by user during MetaMask confirmation.
-        to: this.contractAddress, // Required except during contract publications.
+        to: ACCOUNT.deployedSmartContractAddress, // Required except during contract publications.
         from: window.ethereum.selectedAddress, // must match user's active address.
         value: '0x00', // Only required to send ether to the recipient from the initiating external account.
         // Used for smart contract interaction
