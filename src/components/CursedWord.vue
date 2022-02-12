@@ -11,8 +11,6 @@
       <br />
     </div>
     <Keyboard :guesses="guesses" :results="results" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
-    <hr/>
-    <br />
     <EnableEthereumButton/>
   </div>
 </template>
@@ -175,15 +173,5 @@ export default {
 </script>
 
 <style scoped>
-
-  .cursed-word {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-
-    /* display: block; */
-    width: 900px;
-  }
 
 </style>

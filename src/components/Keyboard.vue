@@ -1,7 +1,6 @@
 <template>
   <div class="keyboard">
     <br />
-    <br />
     <hr />
     <div class="row">
       <br />
@@ -20,6 +19,7 @@
       </span>
     </div>
   <br />
+  <hr />
   </div>
 </template>
 
@@ -40,33 +40,33 @@ export default {
     }
   },
   computed: {
-    guessedLetters: function() {
+    allGuessedLetters: function() {
       if (!this.guesses) { return ""; }
       // no need to remove duplicates for our checking
-      return this.guesses.join("").replace(/\s/g, '').toLowerCase();
+      return this.guesses.join("");
     }
   },
   methods: {
     letterStyle(letter) {
-      const taken = this.guessedLetters || "";
-      let style = { color: "#2c3e5" };
-      let lowerLetter = letter.toLowerCase();
+      const taken = this.allGuessedLetters || '';
+      let style = { color: '#2c3e5' };
+      let lowerLetter = letter;
 
       if (taken.includes(lowerLetter)) {
-        style.color = "grey";
-        style.fontWeight = "normal";
+        style.color = 'LightGrey';
+        style.fontWeight = 'normal';
       }
 
       if (this.yellowLetters.includes(lowerLetter)) {
-        style.color = "DarkGoldenRod";
-        style.borderBottom = "2px solid DarkGoldenRod";
-        style.fontWeight = "bold";
+        style.color = 'DarkGoldenRod';
+        style.borderBottom = '2px solid DarkGoldenRod';
+        style.fontWeight = 'bold';
       }
 
       if (this.greenLetters.includes(lowerLetter)) {
-        style.color = "Green";
-        style.borderBottom = "2px solid Green";
-        style.fontWeight = "bold";
+        style.color = 'rgb(26, 127, 55)';
+        style.borderBottom = '2px solid rgb(26, 127, 55)';
+        style.fontWeight = 'bold';
       }
 
       return style;
@@ -79,7 +79,8 @@ export default {
 
   .keyboard {
     font-weight: bold;
-    font-size: 20px;
+    font-size: 32px;
+    font-family: 'Courier New', Courier, monospace;
   }
 
   .row {
