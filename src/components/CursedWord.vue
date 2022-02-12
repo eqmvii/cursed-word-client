@@ -19,7 +19,7 @@
 import Web3 from 'web3';
 
 // Compiled smart contract code for interaction
-const CursedWordV1 = require('../contracts/CursedWordV1.json');
+const CursedWordV1 = require('../../contracts/CursedWordV1.json');
 
 import EnableEthereumButton from './EnableEthereumButton';
 import GuessList from './GuessList.vue';
