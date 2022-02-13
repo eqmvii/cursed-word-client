@@ -8,7 +8,6 @@ const DICTIONARY = require('./dictionary.json');
 const WEI_IN_AN_ETHER = 1000000000000000000
 
 let theSecretWord = randomWord();
-const SEND_DEBUG_GUESS = false;
 const DEPLOYED_CONTRACT_ADDRESS = account.deployedSmartContractAddress;
 
 let guessesRespondedTo = [];
