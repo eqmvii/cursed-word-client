@@ -6,6 +6,11 @@ I am deeply skeptical of crypto, and the tech underlying crypto. But I want to b
 
 Let's ruin a whimsical game by financializing it!
 
+# Seed Money
+
+Send 100 from the first hardhat test account to an arbitrary account
+yarn send --from 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --to [DESTO] --amount 100
+
 ## Project setup
 ```
 yarn install

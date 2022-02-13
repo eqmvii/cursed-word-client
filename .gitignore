@@ -1,6 +1,9 @@
 # server keys
 account.json
 
+# local seeding
+secret-commands.md
+
 .DS_Store
 node_modules
 /dist

@@ -2,14 +2,16 @@
 // Knows the secret word and responds to guesses from cursed-word-client
 
 const Web3 = require('web3');
-const CursedWordV1 = require('./contracts/CursedWordV1.json');
+const CursedWordContract = require('./contracts/CursedWordV2.json');
 const account = require('./account.json');
+const DICTIONARY = require('./dictionary.json');
+const WEI_IN_AN_ETHER = 1000000000000000000
 
-const THE_SECRET_WORD = "TREAT";
+let theSecretWord = randomWord();
 const SEND_DEBUG_GUESS = false;
 const DEPLOYED_CONTRACT_ADDRESS = account.deployedSmartContractAddress;
 
-const guessesRespondedTo = [];
+let guessesRespondedTo = [];
 
 // ==== TEST public keys
 // Fresh account address: 0xcbc4efe8CCf05a9435089e2F8F68622abBb7642e
@@ -20,35 +22,35 @@ const init = async () => {
   console.log('Initializing connection to Ethereum blockchain...\n');
 
   const web3 = new Web3(Web3.givenProvider || "ws://127.0.0.1:8545");
-  const THE_SECRET_WORD_HEX = web3.utils.utf8ToHex(THE_SECRET_WORD);
 
   // create account to interact with the contract
   const freshAccount = web3.eth.accounts.privateKeyToAccount(account.privateKey);
   web3.eth.accounts.wallet.add(freshAccount.privateKey);
-  const connectedContract = new web3.eth.Contract(CursedWordV1.abi, DEPLOYED_CONTRACT_ADDRESS);
+  const connectedContract = new web3.eth.Contract(CursedWordContract.abi, DEPLOYED_CONTRACT_ADDRESS);
+
+  // returns this as a string for some reason?
+  let wordNumber = parseInt(await connectedContract.methods.id().call(), 10);
 
   // Listen to guesses event stream and respond to them
-  setInterval(() => {
-    web3.eth.getBalance(freshAccount.address).then((balance) => {
-      console.log(`${Date.now()} Current Balance: ${balance}`);
-    });
+  let intervalId = setInterval(async () => {
+    let balance = await web3.eth.getBalance(freshAccount.address);
 
     // hard coded filter for word number for now. Eventually get from public variable in contract.
-    connectedContract.getPastEvents('GuessReceived', { fromBlock: 0, filter: { wordNumber: 1 } }).then((events) =>
+    connectedContract.getPastEvents('GuessReceived', { fromBlock: 0, filter: { id: wordNumber } }).then((events) =>
     {
-      events.forEach(event => {
-        console.log(`${event.returnValues.guessNumber}: ${web3.utils.hexToUtf8(event.returnValues.wordGuessed)}`);
+      let rightNow = new Date();
+      console.log(`${rightNow.getHours()}:${rightNow.getMinutes()}:${rightNow.getSeconds()} | Word ${wordNumber} ${theSecretWord} | Balance: ${(balance / WEI_IN_AN_ETHER).toPrecision(5) } | ${events.length} guesses`);
 
-        // TODO: sort by guess number? Can we rely on that ordering by default?
+      events.forEach(event => {
 
         // Respond to any new events
         if (!guessesRespondedTo.includes(event.returnValues.guessNumber)) {
-          const guessedWord = web3.utils.hexToUtf8(event.returnValues.wordGuessed);
-          console.log('data callback ', event.returnValues.wordGuessed);
-          console.log(`is ${guessedWord} the secret word? ${guessedWord == THE_SECRET_WORD}`);
+          console.log(`\nWord ${wordNumber}, Guess ${event.returnValues.guessNumber}: ${web3.utils.hexToUtf8(event.returnValues.wordGuessed)}\n`);
+          const guessedWord = web3.utils.hexToUtf8(event.returnValues.wordGuessed).toUpperCase();
           const responseCode = cursedWordGuessResponse(guessedWord);
 
-          connectedContract.methods.respond_to_guess(event.returnValues.guessNumber, event.returnValues.guesser, event.returnValues.wordGuessed, responseCode).send({
+          // TODO: Understand and fixup these values
+          connectedContract.methods.respond_to_guess(wordNumber, event.returnValues.guessNumber, event.returnValues.guesser, event.returnValues.wordGuessed, responseCode).send({
             from: freshAccount.address,
             // gasPrice (optional - gas price in wei),
             // gas (optional - max gas limit)
@@ -58,6 +60,14 @@ const init = async () => {
           });
 
           guessesRespondedTo.push(event.returnValues.guessNumber);
+
+          // This guess won, the smart contract will increment and so will we
+          if(responseCode === 33333) {
+            // TODO: Consider awaiting to get the number from the deployed SC for max syncronicity?
+            wordNumber += 1;
+            guessesRespondedTo = [];
+            theSecretWord = randomWord();
+          }
         }
       });
     });
@@ -65,18 +75,24 @@ const init = async () => {
   }, 1 * 1000);
 };
 
+function randomWord() {
+  // TODO: avoid reuse?
+  // TODO: to protect from crashes, pre-randomize list so that number always matches contract wordId
+  return DICTIONARY.wordList[Math.floor(Math.random()*DICTIONARY.wordList.length)];
+}
+
 function cursedWordGuessResponse(guess) {
-  console.log("Correct answer is " + THE_SECRET_WORD);
+  console.log("Correct answer is " + theSecretWord);
   let responseArray = [];
   let remainingLetters = [];
 
   // record exact matches and remaining letters
-  for(let i = 0; i < THE_SECRET_WORD.length; i++) {
-    if (guess[i] === THE_SECRET_WORD[i]) {
+  for(let i = 0; i < theSecretWord.length; i++) {
+    if (guess[i] === theSecretWord[i]) {
       responseArray.push("3");
     } else {
       responseArray.push("1");
-      remainingLetters.push(THE_SECRET_WORD[i]);
+      remainingLetters.push(theSecretWord[i]);
     }
   }
 
@@ -94,7 +110,6 @@ function cursedWordGuessResponse(guess) {
   return parseInt(responseArray.join(""), 10);
 }
 
-// START
 init();
 
 

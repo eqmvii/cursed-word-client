@@ -19,8 +19,10 @@
 import Web3 from 'web3';
 
 // Compiled smart contract code for interaction
-const CURSED_WORD_V1_CONTRACT = require('../../contracts/CursedWordV1.json');
+const CURSED_WORD_CONTRACT = require('../../contracts/CursedWordV2.json');
 const ACCOUNT = require('../../account.json');
+
+const WEI_IN_AN_ETHER = 1000000000000000000;
 
 import EnableEthereumButton from './EnableEthereumButton';
 import GuessList from './GuessList.vue';
@@ -80,7 +82,7 @@ export default {
       this.web3 = new Web3(window.ethereum);
 
       this.connectedContract = new this.web3.eth.Contract(
-        CURSED_WORD_V1_CONTRACT.abi,
+        CURSED_WORD_CONTRACT.abi,
         // Must update each time contract is deployed! IT IS IN ANOTHER PLACE TOO
         ACCOUNT.deployedSmartContractAddress // the deployed contract's address
       );
@@ -94,10 +96,8 @@ export default {
 
 
       setInterval(() => {
-        // console.log('check for results...');
         // TODO: Update wordNumber once game can progress
         this.connectedContract.getPastEvents('GuessResult', { fromBlock: "latest", filter: { wordNumber: 1 } }).then((events) => {
-          console.log(`events length: ${events.length}`);
           events.forEach(event => {
             if (!this.resultsReceived.includes(event.returnValues.guessNumber)) {
               console.log('got a new event!');

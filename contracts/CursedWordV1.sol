@@ -5,8 +5,8 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "hardhat/console.sol";
 
-// TODO: What is the gas implication of saving this on-chain in the smart contract.
-// Are the emitted events sufficient?
+// TODO: Remove. This is far too expensive. Events cost much less gas to write,
+// and put the same information on the blockchain.
 struct GuessInfo {
   address guesser;
   bytes guess;
