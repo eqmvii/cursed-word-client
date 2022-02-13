@@ -1,8 +1,9 @@
 <template>
   <div class="word-game">
-    <h1>Cursed Word {{ this.wordId }}&nbsp;</h1>
+    <h1>Cursed Word {{ this.wordId }}</h1>
     <br/>
     <GuessList
+      v-if="address"
       :currentGuess="currentGuess"
       :guesses="guesses"
       :otherPlayerGuesses="otherPlayerGuesses"
@@ -21,8 +22,10 @@
       <h1>Somebody else won. Refresh for next word.</h1>
       <br />
     </div>
+    <p v-if="address && this.otherPlayerGuesses.length > 0">Guesses ending in <strong>*</strong> were submitted by another player</p>
     <Keyboard :guesses="guesses" :results="results" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
     <EnableEthereumButton @metamask-connected="connect"/>
+    <p v-if="this.address">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} | {{ this.balance }} eth</p>
   </div>
 </template>
 
@@ -58,7 +61,7 @@ export default {
       guesses: [],
       otherPlayerGuesses: [],
       connectedContract: {},
-      web3: {},
+      web3: null,
       results: {},
       yellowLetters: [],
       greenLetters: [],
@@ -69,6 +72,7 @@ export default {
       defeat: false,
       wordId: null,
       address: null,
+      balance: 0,
     }
   },
   // TODO ERIC: Handle random connection to an in-progress game.
@@ -101,7 +105,10 @@ export default {
       this.address = (await window.ethereum.request({ method: 'eth_requestAccounts' }))[0].toLowerCase();
       console.log(`Playing wordId ${this.wordId} as address ${this.address}`);
 
-      setInterval(() => {
+      setInterval(async () => {
+        // reset balance
+        this.balance = ((await this.web3.eth.getBalance(this.address)) / WEI_IN_AN_ETHER).toPrecision(4);
+
         // TODO: Block 0 or latest or nothing below?
         this.connectedContract.getPastEvents('GuessResult', { fromBlock: 0, filter: { id: this.wordId } }).then((events) => {
           events.forEach(event => {

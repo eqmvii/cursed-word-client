@@ -7,7 +7,7 @@
 
 <script>
 export default {
-  name: 'GuessList',
+  name: 'EnableEthereumButton',
   data() {
     return {
       disabled: false,
