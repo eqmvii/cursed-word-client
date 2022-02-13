@@ -174,7 +174,9 @@ export default {
         // gas: '100', // customizable by user during MetaMask confirmation.
         to: ACCOUNT.deployedSmartContractAddress, // Required except during contract publications.
         from: window.ethereum.selectedAddress, // must match user's active address.
-        value: '0x00', // Only required to send ether to the recipient from the initiating external account.
+        // value: '0x00', // Only required to send ether to the recipient from the initiating external account.
+        // value: '0x4563918244f40000', // 5 eth in hexidecimal
+        value: (0.008 * WEI_IN_AN_ETHER).toString(16),
         // Used for smart contract interaction
         data: this.connectedContract.methods.attempt(this.wordId, hexedGuess).encodeABI(),
         // manually setting to 31337 for local. May need to change for test net?
