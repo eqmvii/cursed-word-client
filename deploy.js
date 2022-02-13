@@ -25,6 +25,8 @@ async function deploy() {
 
   balance = await web3.eth.getBalance(freshAccount.address);
   console.log(`Contract deployed to ${result._address}. End balance: ${balance}`);
+
+  process.exit();
 }
 
 deploy();

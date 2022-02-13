@@ -47,23 +47,23 @@ export default {
     }
   },
   methods: {
+    // TODO: Refactor into components + classes for a letter, instead of dumb style tags
     letterStyle(letter) {
       const taken = this.allGuessedLetters || '';
-      let style = { color: '#2c3e5' };
-      let lowerLetter = letter;
+      let style = { };
 
-      if (taken.includes(lowerLetter)) {
+      if (taken.includes(letter)) {
         style.color = 'LightGrey';
         style.fontWeight = 'normal';
       }
 
-      if (this.yellowLetters.includes(lowerLetter)) {
+      if (this.yellowLetters.includes(letter)) {
         style.color = 'DarkGoldenRod';
         style.borderBottom = '2px solid DarkGoldenRod';
         style.fontWeight = 'bold';
       }
 
-      if (this.greenLetters.includes(lowerLetter)) {
+      if (this.greenLetters.includes(letter)) {
         style.color = 'rgb(3, 174, 0)';
         style.borderBottom = '2px solid rgb(3, 174, 0)';
         style.fontWeight = 'bold';

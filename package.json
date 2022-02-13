@@ -6,7 +6,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "oracle": "node cursed-word-oracle.js"
+    "oracle": "node cursed-word-oracle.js",
+    "deploy": "node deploy.js"
   },
   "dependencies": {
     "core-js": "^3.6.5",

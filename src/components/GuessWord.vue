@@ -2,7 +2,13 @@
   <div class="word-game">
     <h1>Guess Word</h1>
     <br/>
-    <GuessList :currentGuess="currentGuess" :guesses="guesses" :results="results" :won="victory" />
+    <GuessList
+      :currentGuess="currentGuess"
+      :guesses="guesses"
+      :otherPlayerGuesses="[]"
+      :results="results"
+      :won="victory"
+    />
     <br />
     <SpinningIcon v-if="awaitingResult" />
     <div v-if="victory">
@@ -63,7 +69,7 @@ export default {
   },
   methods: {
     submitGuess: function() {
-      this.guesses.push(this.currentGuess); // TODO power this with just lower string; ugh.
+      this.guesses.push(this.currentGuess);
       let respCode = this.guessResponse();
       this.results[this.currentGuess] = respCode;
       let numGreens = 0;
