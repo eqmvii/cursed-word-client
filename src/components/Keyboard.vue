@@ -64,8 +64,8 @@ export default {
       }
 
       if (this.greenLetters.includes(lowerLetter)) {
-        style.color = 'rgb(26, 127, 55)';
-        style.borderBottom = '2px solid rgb(26, 127, 55)';
+        style.color = 'rgb(3, 174, 0)';
+        style.borderBottom = '2px solid rgb(3, 174, 0)';
         style.fontWeight = 'bold';
       }
 

@@ -1,13 +1,24 @@
 <template>
   <div class="word-game">
-    <h1>Cursed Word</h1>
+    <h1>Cursed Word {{ this.wordId }}&nbsp;</h1>
     <br/>
-    <GuessList :currentGuess="currentGuess" :guesses="guesses" :results="results" :won="victory" />
+    <GuessList
+      :currentGuess="currentGuess"
+      :guesses="guesses"
+      :otherPlayerGuesses="otherPlayerGuesses"
+      :results="results"
+      :won="victory"
+    />
     <br />
     <SpinningIcon v-if="awaitingResult" />
     <div v-if="victory">
       <br />
       <h1>You won!</h1>
+      <br />
+    </div>
+    <div v-if="defeat">
+      <br />
+      <h1>Somebody else won. Refresh for next word.</h1>
       <br />
     </div>
     <Keyboard :guesses="guesses" :results="results" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
@@ -22,6 +33,7 @@ import Web3 from 'web3';
 const CURSED_WORD_CONTRACT = require('../../contracts/CursedWordV2.json');
 const ACCOUNT = require('../../account.json');
 
+// eslint-disable-next-line
 const WEI_IN_AN_ETHER = 1000000000000000000;
 
 import EnableEthereumButton from './EnableEthereumButton';
@@ -42,9 +54,9 @@ export default {
   },
   data() {
     return {
-      count: 1,
       currentGuess: '',
       guesses: [],
+      otherPlayerGuesses: [],
       connectedContract: {},
       web3: {},
       results: {},
@@ -53,7 +65,10 @@ export default {
       resultsReceived: [],
       inputLocked: true,
       awaitingResult: false,
-      victory: false
+      victory: false,
+      defeat: false,
+      wordId: null,
+      address: null,
     }
   },
   // TODO ERIC: Handle random connection to an in-progress game.
@@ -81,55 +96,55 @@ export default {
       console.log('Connect to blockchain due to emitted event');
       this.web3 = new Web3(window.ethereum);
 
-      this.connectedContract = new this.web3.eth.Contract(
-        CURSED_WORD_CONTRACT.abi,
-        // Must update each time contract is deployed! IT IS IN ANOTHER PLACE TOO
-        ACCOUNT.deployedSmartContractAddress // the deployed contract's address
-      );
-
-      // Get the word number via the contract's public function
-      // TODO: Set into state and use it
-      this.connectedContract.methods.wordNumber().call().then(result => console.log(result));
-      this.connectedContract.methods.getGuessInfoArray().call().then(result => console.log(result));
-      this.connectedContract.methods.getResultListArray().call().then(result => console.log(result));
-      // console.log(this.connectedContract.methods);
-
+      this.connectedContract = new this.web3.eth.Contract(CURSED_WORD_CONTRACT.abi, ACCOUNT.deployedSmartContractAddress);
+      this.wordId = await this.connectedContract.methods.id().call();
+      this.address = (await window.ethereum.request({ method: 'eth_requestAccounts' }))[0].toLowerCase();
+      console.log(`Playing wordId ${this.wordId} as address ${this.address}`);
 
       setInterval(() => {
-        // TODO: Update wordNumber once game can progress
-        this.connectedContract.getPastEvents('GuessResult', { fromBlock: "latest", filter: { wordNumber: 1 } }).then((events) => {
+        // TODO: Block 0 or latest or nothing below?
+        this.connectedContract.getPastEvents('GuessResult', { fromBlock: 0, filter: { id: this.wordId } }).then((events) => {
           events.forEach(event => {
             if (!this.resultsReceived.includes(event.returnValues.guessNumber)) {
-              console.log('got a new event!');
               this.awaitingResult = false;
-              this.guesses.push(this.currentGuess);
               // new result received, record it and allow new entry
-              let receivedWordGuess = this.web3.utils.hexToUtf8(event.returnValues.wordGuessed);
+              let receivedWordGuess = this.web3.utils.hexToUtf8(event.returnValues.wordGuessed).toUpperCase();
               let receivedCodedResult = event.returnValues.result;
               let stringifiedReceivedCodedResult = `${receivedCodedResult}`;
-              // TODO ERIC stringify this here without breaking the rest of the app logic
+              let guesserAddress = event.returnValues.guesser.toLowerCase();
               this.results[receivedWordGuess] = event.returnValues.result;
+              this.guesses.push(receivedWordGuess);
+
+              if (this.address != guesserAddress) {
+                this.otherPlayerGuesses.push(receivedWordGuess);
+              }
 
               let numGreens = 0;
 
-              // to avoid spoiling guesses, only add green/yellow if THIS client guessed the word:
-              if (this.guesses.includes(receivedWordGuess)) {
-                for (let i = 0; i < receivedWordGuess.length; i++) {
-                  if (stringifiedReceivedCodedResult[i] == 2) {
-                    this.yellowLetters.push(receivedWordGuess[i]);
-                    // TODO: uniqueify ?
-                  } else if (stringifiedReceivedCodedResult[i] == 3) {
-                    this.greenLetters.push(receivedWordGuess[i]);
-                    numGreens += 1;
-                  }
+              for (let i = 0; i < receivedWordGuess.length; i++) {
+                if (stringifiedReceivedCodedResult[i] === '2') {
+                  this.yellowLetters.push(receivedWordGuess[i].toUpperCase());
+                  // TODO: uniqueify ?
+                } else if (stringifiedReceivedCodedResult[i] === '3') {
+                  this.greenLetters.push(receivedWordGuess[i].toUpperCase());
+                  numGreens += 1;
                 }
               }
 
               this.resultsReceived.push(event.returnValues.guessNumber);
-              this.currentGuess = '';
-              if (numGreens === 5) {
+
+              // If the returned result is the current guess, clear it out
+              if (this.guesses.includes(this.currentGuess)) {
+                this.currentGuess = '';
+              }
+
+              if (numGreens === 5 && this.address === guesserAddress) {
                 console.log('YOU WON!');
                 this.victory = true;
+              } else if (numGreens === 5) {
+                console.log('SOMEBODY ELSE WON');
+                this.defeat = true;
+                this.currentGuess = '';
               } else {
                 // allow another guess
                 this.inputLocked = false;
@@ -154,7 +169,7 @@ export default {
         from: window.ethereum.selectedAddress, // must match user's active address.
         value: '0x00', // Only required to send ether to the recipient from the initiating external account.
         // Used for smart contract interaction
-        data: this.connectedContract.methods.attempt(hexedGuess).encodeABI(),
+        data: this.connectedContract.methods.attempt(this.wordId, hexedGuess).encodeABI(),
         // manually setting to 31337 for local. May need to change for test net?
         // Must edit this in the network in metamask to get it to have the correct value.
         chainId: '31337', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.

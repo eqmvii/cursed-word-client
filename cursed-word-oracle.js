@@ -18,6 +18,8 @@ let guessesRespondedTo = [];
 // Send faucet eth here to allow for smart contract communication
 // ==== END test keys
 
+// TODO: Handle reconnect. Dictionary probably needs to be in the same order, and try not to re-send results.
+
 const init = async () => {
   console.log('Initializing connection to Ethereum blockchain...\n');
 
@@ -46,11 +48,17 @@ const init = async () => {
         // Respond to any new events
         if (!guessesRespondedTo.includes(event.returnValues.guessNumber)) {
           console.log(`\nWord ${wordNumber}, Guess ${event.returnValues.guessNumber}: ${web3.utils.hexToUtf8(event.returnValues.wordGuessed)}\n`);
-          const guessedWord = web3.utils.hexToUtf8(event.returnValues.wordGuessed).toUpperCase();
-          const responseCode = cursedWordGuessResponse(guessedWord);
+          let guessedWord = web3.utils.hexToUtf8(event.returnValues.wordGuessed).toUpperCase();
+          let responseCode = cursedWordGuessResponse(guessedWord);
+
+          if (guessedWord.length != 5) {
+            // 5 0s as an "error code"
+            guessedWord = '-----';
+            responseCode = 11111;
+          }
 
           // TODO: Understand and fixup these values
-          connectedContract.methods.respond_to_guess(wordNumber, event.returnValues.guessNumber, event.returnValues.guesser, event.returnValues.wordGuessed, responseCode).send({
+          connectedContract.methods.respond_to_guess(wordNumber, event.returnValues.guessNumber, event.returnValues.guesser, web3.utils.utf8ToHex(guessedWord), responseCode).send({
             from: freshAccount.address,
             // gasPrice (optional - gas price in wei),
             // gas (optional - max gas limit)
