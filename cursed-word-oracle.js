@@ -85,7 +85,7 @@ const init = async () => {
 function randomWord() {
   // TODO: avoid reuse?
   // TODO: to protect from crashes, pre-randomize list so that number always matches contract wordId
-  return DICTIONARY.wordList[Math.floor(Math.random()*DICTIONARY.wordList.length)];
+  return DICTIONARY.wordList[Math.floor(Math.random()*DICTIONARY.wordList.length)].toUpperCase();
 }
 
 function cursedWordGuessResponse(guess) {

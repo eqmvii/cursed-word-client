@@ -13,6 +13,7 @@
     />
     <br />
     <SpinningIcon v-if="awaitingResult" />
+    <p v-if="address && this.otherPlayerGuesses.length > 0">Guesses ending in <strong>*</strong> were submitted by another player</p>
     <div v-if="victory">
       <br />
       <h1>You won!</h1>
@@ -21,10 +22,10 @@
     </div>
     <div v-if="defeat">
       <br />
-      <h1>Somebody else won. Refresh for next word.</h1>
+      <h1>Somebody else won :(</h1>
+      <ResetButton @reset="resetGame"/>
       <br />
     </div>
-    <p v-if="address && this.otherPlayerGuesses.length > 0">Guesses ending in <strong>*</strong> were submitted by another player</p>
     <Keyboard :guesses="guesses" :results="results" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
     <EnableEthereumButton @metamask-connected="connect"/>
     <p v-if="this.address">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} | {{ this.balance }} Eth</p>
@@ -102,14 +103,15 @@ export default {
   },
   methods: {
     connect: async function() {
-      this.inputLocked = false;
-      this.web3 ? '' : this.web3 = new Web3(window.ethereum);
+      this.web3 = new Web3(window.ethereum);
       this.connectedContract = new this.web3.eth.Contract(CURSED_WORD_CONTRACT.abi, ACCOUNT.deployedSmartContractAddress);
       this.address = (await window.ethereum.request({ method: 'eth_requestAccounts' }))[0].toLowerCase();
       this.startNewGame();
     },
     startNewGame: async function() {
       this.wordId = await this.connectedContract.methods.id().call();
+      this.inputLocked = false;
+
       this.gameLoopInterval = setInterval(async () => {
 
         this.balance = ((await this.web3.eth.getBalance(this.address)) / WEI_IN_AN_ETHER).toPrecision(4);
@@ -152,17 +154,14 @@ export default {
               }
 
               if (numGreens === 5 && this.address === guesserAddress) {
+                clearInterval(this.gameLoopInterval);
+                this.inputLocked = true;
                 this.victory = true;
-                clearInterval(this.gameLoopInterval);
               } else if (numGreens === 5) {
-                this.defeat = true;
-                this.currentGuess = '';
                 clearInterval(this.gameLoopInterval);
-              } else {
-                // allow another guess
-                this.inputLocked = false;
+                this.inputLocked = true;
+                this.defeat = true;
               }
-
             }
           });
         });
@@ -170,30 +169,20 @@ export default {
     },
     submitGuess: async function() {
       this.inputLocked = true;
-      const hexedGuess = this.web3.utils.utf8ToHex(this.currentGuess);
 
-      // TODO: Cleanup, maybe understand, idk
       const transactionParameters = {
-        nonce: '0x00', // ignored by MetaMask
-        // important for local transaction
-        gasPrice: '674006785', // customizable by user during MetaMask confirmation.
-        // gas: '100', // customizable by user during MetaMask confirmation.
-        to: ACCOUNT.deployedSmartContractAddress, // Required except during contract publications.
-        from: window.ethereum.selectedAddress, // must match user's active address.
-        // value: (0.008 * WEI_IN_AN_ETHER).toString(16),
+        to: ACCOUNT.deployedSmartContractAddress,
+        from: window.ethereum.selectedAddress,
         value: (0.25 * WEI_IN_AN_ETHER).toString(16),
-        // Used for smart contract interaction
-        data: this.connectedContract.methods.attempt(this.wordId, hexedGuess).encodeABI(),
-        // manually setting to 31337 for local. May need to change for test net?
-        // Must edit this in the network in metamask to get it to have the correct value.
-        chainId: '31337', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+        data: this.connectedContract.methods.attempt(this.wordId, this.web3.utils.utf8ToHex(this.currentGuess)).encodeABI(),
       };
 
-      // txHash is a hex string. As with any RPC call, it may throw an error
-      await window.ethereum.request({
+      let result = await window.ethereum.request({
         method: 'eth_sendTransaction',
         params: [transactionParameters],
       });
+      console.log(result);
+      this.inputLocked = false;
       this.awaitingResult = true;
     },
     resetGame: async function() {
