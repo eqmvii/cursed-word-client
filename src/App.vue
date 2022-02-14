@@ -20,16 +20,12 @@ export default {
   },
   data() {
     return {
-      appMode: null,
-      showToggle: true,
+      appMode: 'blockchain',
+      showToggle: false,
     }
-  },
-  mounted() {
-    console.log('App Mounted');
   },
   methods: {
     chooseMode: function(choice) {
-      console.log('choice');
       this.showToggle = false;
       this.appMode = choice;
     }

@@ -2,13 +2,13 @@
 // Knows the secret word and responds to guesses from cursed-word-client
 
 const Web3 = require('web3');
-const CursedWordContract = require('./contracts/CursedWordV2.json');
-const account = require('./account.json');
+const CURSED_WORD_CONTRACT = require('./contracts/CursedWordV2.json');
+const ACCOUNT = require('./account.json');
 const DICTIONARY = require('./dictionary.json');
 const WEI_IN_AN_ETHER = 1000000000000000000
 
 let theSecretWord = randomWord();
-const DEPLOYED_CONTRACT_ADDRESS = account.deployedSmartContractAddress;
+const DEPLOYED_CONTRACT_ADDRESS = ACCOUNT.deployedSmartContractAddress;
 
 let guessesRespondedTo = [];
 
@@ -22,25 +22,27 @@ let guessesRespondedTo = [];
 const init = async () => {
   console.log('Initializing connection to Ethereum blockchain...\n');
 
-  const web3 = new Web3(Web3.givenProvider || "ws://127.0.0.1:8545");
+  // use account URL or connect to localhost, depending.
+  const web3 = new Web3(ACCOUNT.networkUrl ? new Web3.providers.HttpProvider(ACCOUNT.networkUrl) : 'ws://127.0.0.1:8545');
 
   // create account to interact with the contract
-  const freshAccount = web3.eth.accounts.privateKeyToAccount(account.privateKey);
-  web3.eth.accounts.wallet.add(freshAccount.privateKey);
-  const connectedContract = new web3.eth.Contract(CursedWordContract.abi, DEPLOYED_CONTRACT_ADDRESS);
+  const connectedAccount = web3.eth.accounts.privateKeyToAccount(ACCOUNT.privateKey);
+  web3.eth.accounts.wallet.add(connectedAccount.privateKey);
+  const connectedContract = new web3.eth.Contract(CURSED_WORD_CONTRACT.abi, DEPLOYED_CONTRACT_ADDRESS);
 
   // returns this as a string for some reason?
   let wordNumber = parseInt(await connectedContract.methods.id().call(), 10);
 
   // Listen to guesses event stream and respond to them
+  // TODO: Recursive instead of interval, to avoid double spending?
   let intervalId = setInterval(async () => {
-    let balance = await web3.eth.getBalance(freshAccount.address);
+    let balance = await web3.eth.getBalance(connectedAccount.address);
 
     // hard coded filter for word number for now. Eventually get from public variable in contract.
     connectedContract.getPastEvents('GuessReceived', { fromBlock: 0, filter: { id: wordNumber } }).then((events) =>
     {
       let rightNow = new Date();
-      console.log(`${rightNow.getHours()}:${rightNow.getMinutes()}:${rightNow.getSeconds()} | Word ${wordNumber} ${theSecretWord} | Balance: ${(balance / WEI_IN_AN_ETHER).toPrecision(5) } | ${events.length} guesses`);
+      console.log(`${rightNow.getHours()}:${rightNow.getMinutes()}:${rightNow.getSeconds()} | ${ACCOUNT.network} | Word ${wordNumber} ${theSecretWord} | Oracle Balance ${(balance / WEI_IN_AN_ETHER).toPrecision(5) } | ${events.length} Guesses`);
 
       events.forEach(event => {
 
@@ -56,17 +58,22 @@ const init = async () => {
             responseCode = 11111;
           }
 
-          // TODO: Understand and fixup these values
+          // TODO think about bug/fail state here
+          guessesRespondedTo.push(event.returnValues.guessNumber);
+
+          // TODO: Understand and fixup these gas values
           connectedContract.methods.respond_to_guess(wordNumber, event.returnValues.guessNumber, event.returnValues.guesser, web3.utils.utf8ToHex(guessedWord), responseCode).send({
-            from: freshAccount.address,
+            from: connectedAccount.address,
             // gasPrice (optional - gas price in wei),
             // gas (optional - max gas limit)
             gas: 250_000, // TODO make sane idk
             value: 0, // value to xfer in wei
             // nonce (optional)
-          });
+          }).then(result => {
+            console.log(`\n=== Response Tx sent for ${result.gasUsed} gas | Hash ${result.transactionHash} ===\n`)
 
-          guessesRespondedTo.push(event.returnValues.guessNumber);
+            // TODO recurssion idk
+          });
 
           // This guess won, the smart contract will increment and so will we
           if(responseCode === 33333) {
@@ -89,7 +96,6 @@ function randomWord() {
 }
 
 function cursedWordGuessResponse(guess) {
-  console.log("Correct answer is " + theSecretWord);
   let responseArray = [];
   let remainingLetters = [];
 
@@ -112,7 +118,7 @@ function cursedWordGuessResponse(guess) {
     }
   }
 
-  console.log(guess + ": " + responseArray.join(" "));
+  console.log(`\n=== Guessed ${guess} | Responded code ${responseArray.join(" ")} ===\n`);
 
   return parseInt(responseArray.join(""), 10);
 }

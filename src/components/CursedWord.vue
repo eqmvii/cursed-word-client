@@ -175,7 +175,7 @@ export default {
       const transactionParameters = {
         to: ACCOUNT.deployedSmartContractAddress,
         from: window.ethereum.selectedAddress,
-        value: (0.25 * WEI_IN_AN_ETHER).toString(16),
+        value: (0.001 * WEI_IN_AN_ETHER).toString(16),
         data: this.connectedContract.methods.attempt(this.wordId, this.web3.utils.utf8ToHex(this.currentGuess)).encodeABI(),
       };
 
