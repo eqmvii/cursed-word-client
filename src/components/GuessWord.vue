@@ -12,7 +12,6 @@
     <br />
     <SpinningIcon v-if="awaitingResult" />
     <div v-if="victory">
-      <br />
       <h1>You won!</h1>
       <ResetButton @reset="resetGame"/>
       <br />

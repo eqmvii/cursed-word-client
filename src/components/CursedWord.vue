@@ -85,6 +85,7 @@ export default {
   // TODO ERIC: Handle random connection to an in-progress game.
   async mounted() {
     // Listen for keystrokes
+    // TODO: remove this in beforeDestroy if implementing toggle
     window.addEventListener("keydown", this.handleKeyDown);
   },
   methods: {
