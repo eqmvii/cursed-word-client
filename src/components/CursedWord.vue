@@ -43,10 +43,10 @@ const ACCOUNT = require('../../account.json');
 const WEI_IN_AN_ETHER = 1000000000000000000;
 
 import EnableEthereumButton from './EnableEthereumButton';
-import GuessList from './GuessList.vue';
-import Keyboard from './Keyboard.vue';
+import GuessList from './GuessList';
+import Keyboard from './Keyboard';
 import ResetButton from './ResetButton';
-import SpinningIcon from './SpinningIcon.vue';
+import SpinningIcon from './SpinningIcon';
 
 export default {
   name: 'CursedWord',
@@ -85,7 +85,16 @@ export default {
   // TODO ERIC: Handle random connection to an in-progress game.
   async mounted() {
     // Listen for keystrokes
-    window.addEventListener("keydown", e => {
+    window.addEventListener("keydown", this.handleKeyDown);
+  },
+  methods: {
+    connect: async function() {
+      this.web3 = new Web3(window.ethereum);
+      this.connectedContract = new this.web3.eth.Contract(CURSED_WORD_CONTRACT.abi, ACCOUNT.deployedSmartContractAddress);
+      this.address = (await window.ethereum.request({ method: 'eth_requestAccounts' }))[0].toLowerCase();
+      this.startNewGame();
+    },
+    handleKeyDown: function(e) {
       if (this.inputLocked) { return; }
       let pressed = String.fromCharCode(e.keyCode);
 
@@ -99,14 +108,6 @@ export default {
       } else if (e.keyCode === 13 && this.currentGuess.length === 5) {
         this.submitGuess();
       }
-    });
-  },
-  methods: {
-    connect: async function() {
-      this.web3 = new Web3(window.ethereum);
-      this.connectedContract = new this.web3.eth.Contract(CURSED_WORD_CONTRACT.abi, ACCOUNT.deployedSmartContractAddress);
-      this.address = (await window.ethereum.request({ method: 'eth_requestAccounts' }))[0].toLowerCase();
-      this.startNewGame();
     },
     startNewGame: async function() {
       this.wordId = await this.connectedContract.methods.id().call();

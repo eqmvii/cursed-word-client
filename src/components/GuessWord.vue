@@ -14,6 +14,7 @@
     <div v-if="victory">
       <br />
       <h1>You won!</h1>
+      <ResetButton @reset="resetGame"/>
       <br />
     </div>
     <Keyboard :guesses="guesses" :results="results" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
@@ -21,15 +22,19 @@
 </template>
 
 <script>
-import GuessList from './GuessList.vue';
-import Keyboard from './Keyboard.vue';
-import SpinningIcon from './SpinningIcon.vue';
+import GuessList from './GuessList';
+import Keyboard from './Keyboard';
+import ResetButton from './ResetButton';
+import SpinningIcon from './SpinningIcon';
+
+const DICTIONARY = require('./../../dictionary.json');
 
 export default {
   name: 'GuessWord',
   components: {
     GuessList,
     Keyboard,
+    ResetButton,
     SpinningIcon
   },
   props: {
@@ -37,7 +42,6 @@ export default {
   },
   data() {
     return {
-      count: 1,
       currentGuess: '',
       guesses: [],
       results: {},
@@ -46,10 +50,12 @@ export default {
       inputLocked: false,
       awaitingResult: false,
       victory: false,
-      secretWord: 'GRIME'
+      secretWord: this.randomWord(),
+      logAnswer: false,
     }
   },
   async mounted() {
+    if (this.logAnswer) { console.log(this.secretWord); }
     // TODO: move to named function
     window.addEventListener("keydown", e => {
       if (this.inputLocked) { return; }
@@ -113,6 +119,22 @@ export default {
       }
 
       return responseArray.join("");
+    },
+    resetGame: function() {
+      this.currentGuess = '';
+      this.guesses = [];
+      this.results = {};
+      this.yellowLetters = [];
+      this.greenLetters = [];
+      this.inputLocked = false;
+      this.awaitingResult = false;
+      this.victory = false;
+      this.secretWord = this.randomWord();
+
+      if (this.logAnswer) { console.log(this.secretWord); }
+    },
+    randomWord: function() {
+      return DICTIONARY.wordList[Math.floor(Math.random()*DICTIONARY.wordList.length)].toUpperCase();
     }
   }
 }

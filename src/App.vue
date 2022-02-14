@@ -1,30 +1,37 @@
 <template>
-  <CursedWord v-if="blockchainMode"/>
-  <GuessWord v-else/>
-  <BlockchainToggle v-if="showToggle" @toggle-blockchain="toggleBlockchain" />
+  <CursedWord v-if="appMode == 'blockchain' && !showToggle"/>
+  <GuessWord v-if="appMode == 'sane' && !showToggle"/>
+  <div v-if="showToggle">
+    <h1>Worsle or Wordle?</h1>
+    <button class="mode-button" @click="chooseMode('blockchain')">Blockchain</button>
+    <button class="mode-button" @click="chooseMode('sane')">Sane</button>
+  </div>
 </template>
 
 <script>
-import BlockchainToggle from './components/BlockchainToggle.vue';
 import CursedWord from './components/CursedWord.vue';
 import GuessWord from './components/GuessWord.vue';
 
 export default {
   name: 'App',
   components: {
-    BlockchainToggle,
     CursedWord,
     GuessWord
   },
   data() {
     return {
-      blockchainMode: true,
-      showToggle: false,
+      appMode: null,
+      showToggle: true,
     }
   },
+  mounted() {
+    console.log('App Mounted');
+  },
   methods: {
-    toggleBlockchain: function() {
-      this.blockchainMode = !this.blockchainMode;
+    chooseMode: function(choice) {
+      console.log('choice');
+      this.showToggle = false;
+      this.appMode = choice;
     }
   }
 }
@@ -56,6 +63,21 @@ export default {
 
   /* display: block; */
   width: 900px;
+}
+
+
+.mode-button {
+  background-color: #0f521e;
+  border: none;
+  color: #fff;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  box-shadow: 0 2px 4px -1px rgba(0,0,0,.2),0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12);
+  cursor: pointer;
+  margin: 8px;
 }
 
 </style>
