@@ -6,7 +6,9 @@ secret-commands.md
 
 .DS_Store
 node_modules
-/dist
+
+# Remove so that we can deploy to GH pages!
+# /dist
 
 
 # local env files
