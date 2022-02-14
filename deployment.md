@@ -7,3 +7,7 @@
 `yarn account` lists balances etc.
 
 `yarn deploy --network rinkeby`
+
+# GH pages deploy
+
+`./deploy.sh`
