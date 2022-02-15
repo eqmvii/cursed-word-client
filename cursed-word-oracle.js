@@ -4,13 +4,14 @@
 const Web3 = require('web3');
 const CURSED_WORD_CONTRACT = require('./contracts/CursedWordV2.json');
 const ACCOUNT = require('./account.json');
-const DICTIONARY = require('./dictionary.json');
+const SECRET = require('./secret.json');
+const ORDERED_WORD_OBJECT = require('./sorted-word-list.json');
 const WEI_IN_AN_ETHER = 1000000000000000000
 
-let theSecretWord = randomWord();
 const DEPLOYED_CONTRACT_ADDRESS = ACCOUNT.deployedSmartContractAddress;
 
 let guessesRespondedTo = [];
+let theSecretWord;
 
 // ==== TEST public keys
 // Fresh account address: 0xcbc4efe8CCf05a9435089e2F8F68622abBb7642e
@@ -26,12 +27,20 @@ const init = async () => {
   const web3 = new Web3(ACCOUNT.networkUrl ? new Web3.providers.HttpProvider(ACCOUNT.networkUrl) : 'ws://127.0.0.1:8545');
 
   // create account to interact with the contract
-  const connectedAccount = web3.eth.accounts.privateKeyToAccount(ACCOUNT.privateKey);
+  const connectedAccount = web3.eth.accounts.privateKeyToAccount(SECRET.wordOraclePrivateKey);
   web3.eth.accounts.wallet.add(connectedAccount.privateKey);
   const connectedContract = new web3.eth.Contract(CURSED_WORD_CONTRACT.abi, DEPLOYED_CONTRACT_ADDRESS);
 
   // returns this as a string for some reason?
   let wordNumber = parseInt(await connectedContract.methods.id().call(), 10);
+
+  // Always the same word for a given wordId in smart contract, regardless of prior crashes or reboots
+  theSecretWord = ORDERED_WORD_OBJECT[`${wordNumber}`];
+
+  // Get all guesses responded to already. This way if we crach/reconnect we don't pay to re-send those responses.
+  let alreadyRespondedGuesses = await connectedContract.getPastEvents('GuessResult', { fromBlock: 0, filter: { id: wordNumber } })
+  alreadyRespondedGuesses.forEach(event => guessesRespondedTo.push(event.returnValues.guessNumber));
+  console.log(`\nAlready responded to ${guessesRespondedTo.join(", ")} for this wordId\n`)
 
   // Listen to guesses event stream and respond to them
   // TODO: Recursive instead of interval, to avoid double spending?
@@ -63,7 +72,7 @@ const init = async () => {
 
           // TODO: Understand and fixup these gas values
           connectedContract.methods.respond_to_guess(wordNumber, event.returnValues.guessNumber, event.returnValues.guesser, web3.utils.utf8ToHex(guessedWord), responseCode).send({
-            from: connectedAccount.address,
+            from: ACCOUNT.wordOracleAddress,
             // gasPrice (optional - gas price in wei),
             // gas (optional - max gas limit)
             gas: 250_000, // TODO make sane idk
@@ -79,8 +88,8 @@ const init = async () => {
           if(responseCode === 33333) {
             // TODO: Consider awaiting to get the number from the deployed SC for max syncronicity?
             wordNumber += 1;
+            theSecretWord = ORDERED_WORD_OBJECT[`${wordNumber}`];
             guessesRespondedTo = [];
-            theSecretWord = randomWord();
           }
         }
       });
@@ -88,12 +97,6 @@ const init = async () => {
 
   }, 1 * 1000);
 };
-
-function randomWord() {
-  // TODO: avoid reuse?
-  // TODO: to protect from crashes, pre-randomize list so that number always matches contract wordId
-  return DICTIONARY.wordList[Math.floor(Math.random()*DICTIONARY.wordList.length)].toUpperCase();
-}
 
 function cursedWordGuessResponse(guess) {
   let responseArray = [];

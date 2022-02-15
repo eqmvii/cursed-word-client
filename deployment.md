@@ -29,3 +29,10 @@ This pushes to the gh-pages which is configured to serve from docs/ (the only op
 Clean up by returning to main, and deleting the branch: `git checkout main && git branch -d gh-pages`
 
 So it can be recreated and deployed again.
+
+# CONSIDERATIONS / CHECK LIST
+
+* Re-randomize word order
+* Update addresses in account.json
+* Update secret.json (if needed)
+* Fund deployment account

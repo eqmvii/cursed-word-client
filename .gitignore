@@ -1,5 +1,7 @@
-# server keys
+# Secrets only the oracle server should know
 account.json
+secret.json
+sorted-word-list.json
 
 # local seeding
 secret-commands.md
