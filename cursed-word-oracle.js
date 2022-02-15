@@ -3,12 +3,12 @@
 
 const Web3 = require('web3');
 const CURSED_WORD_CONTRACT = require('./contracts/CursedWordV3.json');
-const ACCOUNT = require('./localhost_account.json');
+const ACCOUNT = require('./account.json');
 const SECRET = require('./secret.json');
 const ORDERED_WORD_OBJECT = require('./sorted-word-list.json');
 const WEI_IN_AN_ETHER = 1000000000000000000
 
-const DEPLOYED_CONTRACT_ADDRESS = ACCOUNT.deployedSmartContractAddress;
+const DEPLOYED_CONTRACT_ADDRESS = ACCOUNT.deployedGameAddress;
 
 let guessesRespondedTo = [];
 let theSecretWord;
@@ -24,7 +24,7 @@ const init = async () => {
   console.log('Initializing connection to Ethereum blockchain...\n');
 
   // use account URL or connect to localhost, depending.
-  const web3 = new Web3(SECRET.rinkebyNetworkUrl ? new Web3.providers.HttpProvider(SECRET.rinkebyNetworkUrl) : 'ws://127.0.0.1:8545');
+  const web3 = new Web3(ACCOUNT.network == 'rinkeby' ? new Web3.providers.HttpProvider(SECRET.rinkebyNetworkUrl) : 'ws://127.0.0.1:8545');
 
   // create account to interact with the contract
   const connectedAccount = web3.eth.accounts.privateKeyToAccount(SECRET.wordOraclePrivateKey);
@@ -51,7 +51,7 @@ const init = async () => {
     connectedContract.getPastEvents('GuessReceived', { fromBlock: 0, filter: { id: wordNumber } }).then((events) =>
     {
       let rightNow = new Date();
-      console.log(`${rightNow.getHours()}:${rightNow.getMinutes()}:${rightNow.getSeconds()} | ${ACCOUNT.network} | Word ${wordNumber} ${theSecretWord} | Oracle Balance ${(balance / WEI_IN_AN_ETHER).toPrecision(5) } | ${events.length} Guesses`);
+      console.log(`${rightNow.getHours()}:${rightNow.getMinutes()}:${rightNow.getSeconds()} | ${ACCOUNT.network} ${connectedAccount.address.substring(0, 6)} | Word ${wordNumber} ${theSecretWord} | Oracle Balance ${(balance / WEI_IN_AN_ETHER).toPrecision(5) } | ${events.length} Guesses`);
 
       events.forEach(event => {
 
@@ -72,7 +72,7 @@ const init = async () => {
 
           // TODO: Understand and fixup these gas values
           connectedContract.methods.respond_to_guess(wordNumber, event.returnValues.guessNumber, event.returnValues.guesser, web3.utils.utf8ToHex(guessedWord), responseCode).send({
-            from: ACCOUNT.wordOracleAddress,
+            from: ACCOUNT.oracleAddress,
             // gasPrice (optional - gas price in wei),
             // gas (optional - max gas limit)
             gas: 250_000, // TODO make sane idk

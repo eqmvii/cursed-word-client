@@ -39,7 +39,7 @@ import Web3 from 'web3';
 // Compiled smart contract code for interaction
 const CURSED_WORD_GAME_CONTRACT = require('../../contracts/CursedWordV3.json');
 const CURSED_WORD_COIN_CONTRACT = require('../../contracts/CursedWordCoin.json');
-const ACCOUNT = require('../../localhost_account.json');
+const ACCOUNT = require('../../account.json');
 
 // eslint-disable-next-line
 const WEI_IN_AN_ETHER = 1000000000000000000;
@@ -95,8 +95,8 @@ export default {
   methods: {
     connect: async function() {
       this.web3 = new Web3(window.ethereum);
-      this.connectedContract = new this.web3.eth.Contract(CURSED_WORD_GAME_CONTRACT.abi, ACCOUNT.deployedSmartContractAddress);
-      this.connectedCoinContract = new this.web3.eth.Contract(CURSED_WORD_COIN_CONTRACT.abi, ACCOUNT.deployedCursedWordCoinAddress);
+      this.connectedContract = new this.web3.eth.Contract(CURSED_WORD_GAME_CONTRACT.abi, ACCOUNT.deployedGameAddress);
+      this.connectedCoinContract = new this.web3.eth.Contract(CURSED_WORD_COIN_CONTRACT.abi, ACCOUNT.deployedCoinAddress);
       this.address = (await window.ethereum.request({ method: 'eth_requestAccounts' }))[0].toLowerCase();
 
       this.startNewGame();
@@ -123,8 +123,8 @@ export default {
       this.gameLoopInterval = setInterval(async () => {
 
         this.ethBalance = ((await this.web3.eth.getBalance(this.address)) / WEI_IN_AN_ETHER).toPrecision(4);
-        this.cwcBalance = await this.connectedCoinContract.methods.balanceOf(this.address).call();
-        this.contractBalance = ((await this.web3.eth.getBalance(ACCOUNT.deployedSmartContractAddress)) / WEI_IN_AN_ETHER).toPrecision(4);
+        this.cwcBalance = ((await this.connectedCoinContract.methods.balanceOf(this.address).call()) / WEI_IN_AN_ETHER).toPrecision(4);
+        this.contractBalance = ((await this.web3.eth.getBalance(ACCOUNT.deployedGameAddress)) / WEI_IN_AN_ETHER).toPrecision(4);
 
         // TODO: Block 0 or latest or nothing below?
         this.connectedContract.getPastEvents('GuessResult', { fromBlock: 0, filter: { id: this.wordId } }).then((events) => {
@@ -180,17 +180,17 @@ export default {
       this.inputLocked = true;
 
       const transactionParameters = {
-        to: ACCOUNT.deployedSmartContractAddress,
+        to: ACCOUNT.deployedGameAddress,
         from: window.ethereum.selectedAddress,
         value: (0.001 * WEI_IN_AN_ETHER).toString(16),
         data: this.connectedContract.methods.attempt(this.wordId, this.web3.utils.utf8ToHex(this.currentGuess)).encodeABI(),
       };
 
-      let result = await window.ethereum.request({
+      await window.ethereum.request({
         method: 'eth_sendTransaction',
         params: [transactionParameters],
       });
-      console.log(result);
+
       this.inputLocked = false;
       this.awaitingResult = true;
     },

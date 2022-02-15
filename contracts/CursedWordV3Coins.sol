@@ -17,7 +17,8 @@ contract CursedWordV3 {
   uint public id;
   uint public numberOfGuesses;
   address public contractOwner;
-  CursedWordCoin cursedWordCoin;
+
+  CursedWordCoin public cursedWordCoin;
 
   event GuessReceived(uint indexed id, uint guessNumber, address guesser, bytes wordGuessed);
   event GuessResult(uint indexed id,  uint guessNumber, address guesser, bytes wordGuessed, uint16 result);
@@ -31,14 +32,10 @@ contract CursedWordV3 {
     // TODO: THIS IS A COMPROMISED ACCOUNT
     contractOwner = 0xcbc4efe8CCf05a9435089e2F8F68622abBb7642e;
 
-    console.log("Time to create a new cryptocurrency");
-
     // Create our own cryptocurrency! This contract will become its owner.
     cursedWordCoin = new CursedWordCoin();
 
-    console.log("Address of new contract: ", address(cursedWordCoin));
-
-    console.log("Created a new cryptocurrency");
+    console.log("New coin created! Address of contract: ", address(cursedWordCoin));
   }
 
   function attempt(uint wordId, bytes memory guess) payable public {
@@ -46,8 +43,8 @@ contract CursedWordV3 {
     require(id == wordId, "This word has already been solved.");
     // TODO require minimum eth send for play. Base on gas cost?
 
-    // idk 1 coin for guessing?
-    cursedWordCoin.mint(msg.sender, 1);
+    // Mint 1 CWC coin for a guess (18 zeroes / decimals)
+    cursedWordCoin.mint(msg.sender, 1_000_000_000_000_000_000);
 
     numberOfGuesses += 1;
     console.log("Number of Guesses: ", numberOfGuesses);
@@ -69,19 +66,19 @@ contract CursedWordV3 {
     console.log("Response received: ", response, msg.sender);
 
     if (response == 33333) {
-      // Send the Oracle the remaining ~20% of the collected funds
+      // Send the Oracle ~10% of the collected funds to cover fees for responses
       (bool sentToOwner, bytes memory _ownserSendData) = contractOwner.call{value: (address(this).balance / 5)}("");
       require(sentToOwner, "Failed to send winner Ether");
 
-      // Send the winner remaining ~80% of the received funds
+      // Send the winner remaining ~90% of the received funds
       (bool sentToWinner, bytes memory _winnerSendData) = guesser.call{value: address(this).balance }("");
       require(sentToWinner, "Failed to send winner Ether");
 
       console.log("The correct word was guessed!");
 
-      // Mint 100_000 Cursed Word Coins to the winner
-      console.log("Minting for winning :toot:");
-      cursedWordCoin.mint(guesser, 100000);
+      console.log("Minting 100 coins for winning :toot:");
+      // Mint 100 CWC coin for a guess (18 zeroes / decimals)
+      cursedWordCoin.mint(guesser, (100 * 1_000_000_000_000_000_000));
 
       resetGame();
     }
@@ -93,6 +90,7 @@ contract CursedWordV3 {
 contract CursedWordCoin is ERC20, Pausable, Ownable {
     constructor() ERC20("Cursed Word Coin", "CWC") {}
 
+    // TODO: Implement or remove pausable
     function pause() public onlyOwner {
         _pause();
     }

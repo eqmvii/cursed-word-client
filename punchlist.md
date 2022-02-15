@@ -1,6 +1,6 @@
 # Punchlist
 
-* Clean up "tokenomics" lmao
+
 * Store CWC contract address in parent
 * NFT lmao
 * Add columns to include who guessed and maybe guess button
@@ -9,9 +9,17 @@
 * Consider real deployment and require infrastructure
 * What happens if you hit 224 words?
 * Polish keyboard styling
+* Cursed Word Coin send
+* Larger dictionary to enforce real word guesses clientside
+* Read more about HD wallets and nemonics: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+
+# nice to have
+
+* Host hardhat / local chain / deploy stuff locally
 
 # DONE
 
+* Clean up "tokenomics" lmao
 * CWC balance
 * Deploy to rinkeby testnet
 * Refactor pk out of account.json
