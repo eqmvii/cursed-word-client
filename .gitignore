@@ -1,5 +1,5 @@
 # Secrets only the oracle server should know
-account.json
+*account.json
 secret.json
 sorted-word-list.json
 

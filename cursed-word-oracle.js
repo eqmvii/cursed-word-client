@@ -2,8 +2,8 @@
 // Knows the secret word and responds to guesses from cursed-word-client
 
 const Web3 = require('web3');
-const CURSED_WORD_CONTRACT = require('./contracts/CursedWordV2.json');
-const ACCOUNT = require('./account.json');
+const CURSED_WORD_CONTRACT = require('./contracts/CursedWordV3.json');
+const ACCOUNT = require('./localhost_account.json');
 const SECRET = require('./secret.json');
 const ORDERED_WORD_OBJECT = require('./sorted-word-list.json');
 const WEI_IN_AN_ETHER = 1000000000000000000
@@ -24,7 +24,7 @@ const init = async () => {
   console.log('Initializing connection to Ethereum blockchain...\n');
 
   // use account URL or connect to localhost, depending.
-  const web3 = new Web3(ACCOUNT.networkUrl ? new Web3.providers.HttpProvider(ACCOUNT.networkUrl) : 'ws://127.0.0.1:8545');
+  const web3 = new Web3(SECRET.rinkebyNetworkUrl ? new Web3.providers.HttpProvider(SECRET.rinkebyNetworkUrl) : 'ws://127.0.0.1:8545');
 
   // create account to interact with the contract
   const connectedAccount = web3.eth.accounts.privateKeyToAccount(SECRET.wordOraclePrivateKey);
@@ -40,7 +40,7 @@ const init = async () => {
   // Get all guesses responded to already. This way if we crach/reconnect we don't pay to re-send those responses.
   let alreadyRespondedGuesses = await connectedContract.getPastEvents('GuessResult', { fromBlock: 0, filter: { id: wordNumber } })
   alreadyRespondedGuesses.forEach(event => guessesRespondedTo.push(event.returnValues.guessNumber));
-  console.log(`\nAlready responded to ${guessesRespondedTo.join(", ")} for this wordId\n`)
+  if (guessesRespondedTo.length > 0 ) { console.log(`\nAlready responded to ${guessesRespondedTo.join(", ")} for this wordId\n`) }
 
   // Listen to guesses event stream and respond to them
   // TODO: Recursive instead of interval, to avoid double spending?

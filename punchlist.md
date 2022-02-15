@@ -1,7 +1,8 @@
 # Punchlist
 
-* Write new CC SC and integrate with existing SC
-* Write alt payout SC and integrate with existing SC
+* Clean up "tokenomics" lmao
+* Store CWC contract address in parent
+* NFT lmao
 * Add columns to include who guessed and maybe guess button
 * Write up instructions and costs
 * Refactor oracle to not re-transmit responses if rebooting
@@ -11,6 +12,8 @@
 
 # DONE
 
+* CWC balance
 * Deploy to rinkeby testnet
 * Refactor pk out of account.json
 * Store words in numbered map for crash/reconnect of oracle
+* Write new CC SC and integrate with existing SC

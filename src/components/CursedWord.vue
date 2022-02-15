@@ -28,16 +28,18 @@
     </div>
     <Keyboard :guesses="guesses" :results="results" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
     <EnableEthereumButton @metamask-connected="connect"/>
-    <p v-if="this.address">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} | {{ this.balance }} Eth</p>
+    <p v-if="this.address">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} | {{ this.ethBalance }} Eth | {{ this.cwcBalance }} CWCoin </p>
   </div>
 </template>
 
 <script>
 import Web3 from 'web3';
 
+
 // Compiled smart contract code for interaction
-const CURSED_WORD_CONTRACT = require('../../contracts/CursedWordV2.json');
-const ACCOUNT = require('../../account.json');
+const CURSED_WORD_GAME_CONTRACT = require('../../contracts/CursedWordV3.json');
+const CURSED_WORD_COIN_CONTRACT = require('../../contracts/CursedWordCoin.json');
+const ACCOUNT = require('../../localhost_account.json');
 
 // eslint-disable-next-line
 const WEI_IN_AN_ETHER = 1000000000000000000;
@@ -65,7 +67,8 @@ export default {
       currentGuess: '',
       guesses: [],
       otherPlayerGuesses: [],
-      connectedContract: {},
+      connectedContract: {}, // TODO: null?
+      connectedCoinContract: {},
       web3: null,
       results: {},
       yellowLetters: [],
@@ -77,7 +80,8 @@ export default {
       defeat: false,
       wordId: null,
       address: null,
-      balance: 0,
+      ethBalance: 0, // TODO: Null? With conditionals?
+      cwcBalance: null,
       gameLoopInterval: null,
       contractBalance: null,
     }
@@ -91,8 +95,10 @@ export default {
   methods: {
     connect: async function() {
       this.web3 = new Web3(window.ethereum);
-      this.connectedContract = new this.web3.eth.Contract(CURSED_WORD_CONTRACT.abi, ACCOUNT.deployedSmartContractAddress);
+      this.connectedContract = new this.web3.eth.Contract(CURSED_WORD_GAME_CONTRACT.abi, ACCOUNT.deployedSmartContractAddress);
+      this.connectedCoinContract = new this.web3.eth.Contract(CURSED_WORD_COIN_CONTRACT.abi, ACCOUNT.deployedCursedWordCoinAddress);
       this.address = (await window.ethereum.request({ method: 'eth_requestAccounts' }))[0].toLowerCase();
+
       this.startNewGame();
     },
     handleKeyDown: function(e) {
@@ -116,7 +122,8 @@ export default {
 
       this.gameLoopInterval = setInterval(async () => {
 
-        this.balance = ((await this.web3.eth.getBalance(this.address)) / WEI_IN_AN_ETHER).toPrecision(4);
+        this.ethBalance = ((await this.web3.eth.getBalance(this.address)) / WEI_IN_AN_ETHER).toPrecision(4);
+        this.cwcBalance = await this.connectedCoinContract.methods.balanceOf(this.address).call();
         this.contractBalance = ((await this.web3.eth.getBalance(ACCOUNT.deployedSmartContractAddress)) / WEI_IN_AN_ETHER).toPrecision(4);
 
         // TODO: Block 0 or latest or nothing below?
