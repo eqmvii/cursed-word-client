@@ -1,6 +1,5 @@
 # Punchlist
 
-* NFT lmao
 * Add columns to include who guessed and maybe guess button
 * Write up instructions and costs
 * Consider real deployment and require infrastructure
@@ -25,4 +24,5 @@
 * Write new CC SC and integrate with existing SC
 * Store CWC contract address in parent
 * Refactor oracle to not re-transmit responses if rebooting
+* NFT lmao
 

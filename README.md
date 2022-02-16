@@ -34,8 +34,14 @@ yarn lint
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
-# Ganache test notes for metamask
+# Debugging child contracts
 
-In the top right menu of MetaMask, select the network that you are currently connected to. Among several popular defaults, you'll find Custom RPC and Localhost 8545. These are both useful for connecting to a test blockchain, like ganache (opens new window). You can quickly install and start Ganache if you have npm installed with npm i -g ganache-cli && ganache-cli.
+Find the json blob for your contract that was compiled, but not added to the hardhat list:
 
-Ganache has some great features for starting your application with different states. If your application starts with the -m flag, you can feed it the same seed phrase you have in your MetaMask, and the test network will give each of your first 10 accounts 100 test ether, which makes it easier to start work.
+packages\hardhat\artifacts\contracts\CursedWordV4CoinsNFTs.sol\CursedWordTrophy.json
+
+Add it to: packages\react-app\src\contracts\hardhat_contracts.json
+
+manually, in the form of the others, with its address and ABI.
+
+Then you can load it by name with a new Contract component
