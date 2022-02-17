@@ -63,8 +63,11 @@ const init = async () => {
     // LOL forEach can't be usesd with async/await patterns. TIL: https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
     // events.forEach(async (event) => {
     for (const event of events) {
-      // Get the current wordId to make sure the guess matches it
+
+      // Get the current wordId and word to make sure the guess matches it
       wordNumber = await connectedContract.methods.id().call();
+      theSecretWord = ORDERED_WORD_OBJECT[`${wordNumber}`];
+
       if (event.returnValues.id != wordNumber) {
         console.log(`\Received guess #${event.returnValues.guessNumber} for word #${event.returnValues.id}, but we are on word #${wordNumber}`);
       }
@@ -122,8 +125,7 @@ const init = async () => {
           });
           console.log(`\n=== Sent NFT Trophy #${wordNumber} to winner!\n`);
 
-          theSecretWord = ORDERED_WORD_OBJECT[`${wordNumber}`];
-          guessesRespondedTo = [];
+          guessesRespondedTo = []; // TODO ERIC: this is slightly buggy if multiple guesses come in after a win
         }
       }
     }

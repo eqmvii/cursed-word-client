@@ -10,6 +10,9 @@
 * Read more about HD wallets and nemonics: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 * Save randomized dictionary to a file
 * Write game logs
+* Do I need vue router and routes? For rules, non-blockchain version, NFT display, etc.?
+* Refactor guesses responded to so that it's by wordId and guess number?
+* Remove game contract eth balance
 
 # nice to have
 
