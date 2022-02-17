@@ -1,7 +1,7 @@
 # Punchlist
 
-* Estimate gas before send
-* Separate the coin and NFT contracts and make the base upgradeable.
+
+
 * Add columns to include who guessed and maybe guess button
 * Write up instructions and costs
 * Consider real deployment and require infrastructure
@@ -27,4 +27,6 @@
 * Store CWC contract address in parent
 * Refactor oracle to not re-transmit responses if rebooting
 * NFT lmao
+* Estimate gas before send
+* Separate the coin and NFT contracts and make the base upgradeable.
 

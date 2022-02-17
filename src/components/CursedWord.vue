@@ -38,7 +38,7 @@ import Web3 from 'web3';
 
 // Compiled smart contract code for interaction
 const CURSED_WORD_GAME_CONTRACT = require('../../contracts/TestCWGU.json');
-const CURSED_WORD_COIN_CONTRACT = require('../../contracts/CursedWordCoin.json');
+const CURSED_WORD_COIN_CONTRACT = require('../../contracts/CWCoin.json');
 const ACCOUNT = require('../../account.json');
 
 // eslint-disable-next-line
@@ -179,12 +179,12 @@ export default {
     submitGuess: async function() {
       this.inputLocked = true;
 
-      const currentGasPrice = await this.web3.eth.getGasPrice();
+      let currentGasPrice = await this.web3.eth.getGasPrice();
 
-      // TODO verify: this is enough eth to send to oracle and cover costs
-      const txValue = currentGasPrice * 50000;
-
-      console.log(txValue);
+      // Collect enough eth to cover cost of oracle server calling reply function in game contract.
+      // Replies use just under 50k gas in the worst case scenario.
+      // TODO: Increase if also calling mint functions?
+      const txValue = currentGasPrice * 105000;
 
       const transactionParameters = {
         to: ACCOUNT.deployedGameAddress,
