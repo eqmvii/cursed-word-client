@@ -1,7 +1,7 @@
 <template>
   <div class="word-game">
     <h1>Cursed Word {{ this.wordId }}</h1>
-    <p v-if="this.contractBalance">Prize: {{ this.contractBalance }} Eth</p>
+    <p v-if="this.contractBalance">Game Contract Balance: {{ this.contractBalance }} Eth</p>
     <br/>
     <GuessList
       v-if="address"
@@ -122,10 +122,7 @@ export default {
 
       this.gameLoopInterval = setInterval(async () => {
 
-        this.ethBalance = ((await this.web3.eth.getBalance(this.address)) / WEI_IN_AN_ETHER).toPrecision(4);
-        this.cwcBalance = ((await this.connectedCoinContract.methods.balanceOf(this.address).call()) / WEI_IN_AN_ETHER).toPrecision(4);
-        this.contractBalance = ((await this.web3.eth.getBalance(ACCOUNT.deployedGameAddress)) / WEI_IN_AN_ETHER).toPrecision(4);
-
+        this.updateBalances();
         // TODO: Block 0 or latest or nothing below?
         this.connectedContract.getPastEvents('GuessResult', { fromBlock: 0, filter: { id: this.wordId } }).then((events) => {
           events.forEach(event => {
@@ -164,6 +161,7 @@ export default {
 
               if (numGreens === 5 && this.address === guesserAddress) {
                 clearInterval(this.gameLoopInterval);
+                this.updateBalances();
                 this.inputLocked = true;
                 this.victory = true;
               } else if (numGreens === 5) {
@@ -184,7 +182,9 @@ export default {
       // Collect enough eth to cover cost of oracle server calling reply function in game contract.
       // Replies use just under 50k gas in the worst case scenario.
       // TODO: Increase if also calling mint functions?
-      const txValue = currentGasPrice * 105000;
+      const txValue = currentGasPrice * 115000;
+      console.log(currentGasPrice);
+      console.log(txValue);
 
       const transactionParameters = {
         to: ACCOUNT.deployedGameAddress,
@@ -216,7 +216,12 @@ export default {
       this.wordId = null;
 
       this.startNewGame();
-    }
+    },
+    updateBalances: async function() {
+      this.ethBalance = ((await this.web3.eth.getBalance(this.address)) / WEI_IN_AN_ETHER).toPrecision(4);
+      this.cwcBalance = ((await this.connectedCoinContract.methods.balanceOf(this.address).call()) / WEI_IN_AN_ETHER).toPrecision(4);
+      this.contractBalance = ((await this.web3.eth.getBalance(ACCOUNT.deployedGameAddress)) / WEI_IN_AN_ETHER).toPrecision(4);
+    },
   }
 }
 </script>

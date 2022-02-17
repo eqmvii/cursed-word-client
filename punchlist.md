@@ -1,16 +1,15 @@
 # Punchlist
 
-
-
+* clear forEach due to async risk in CursedWord.vue
 * Add columns to include who guessed and maybe guess button
 * Write up instructions and costs
 * Consider real deployment and require infrastructure
 * What happens if you hit 224 words?
-* Polish keyboard styling
-* Cursed Word Coin send
+* Keyboard styling refactor & cleaning
 * Larger dictionary to enforce real word guesses clientside
 * Read more about HD wallets and nemonics: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 * Save randomized dictionary to a file
+* Write game logs
 
 # nice to have
 
@@ -18,6 +17,7 @@
 
 # DONE
 
+* Cursed Word Coin send
 * Clean up "tokenomics" lmao
 * CWC balance
 * Deploy to rinkeby testnet
@@ -29,4 +29,5 @@
 * NFT lmao
 * Estimate gas before send
 * Separate the coin and NFT contracts and make the base upgradeable.
+* Recur via setTimeout instead of setInterval to guard against simultaneous correct guesses in oracle
 

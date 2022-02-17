@@ -8,7 +8,8 @@ const CURSED_WORD_TROPHY_CONTRACT = require('./contracts/CWTrophy.json');
 const ACCOUNT = require('./account.json');
 const SECRET = require('./secret.json');
 const ORDERED_WORD_OBJECT = require('./sorted-word-list.json');
-const WEI_IN_AN_ETHER = 1000000000000000000
+const WEI_IN_AN_ETHER = 1000000000000000000;
+const POLL_RATE = 1 * 1000; // 1 second
 
 const COIN_REWARD = '10'; // string for big number conversion
 
@@ -50,9 +51,7 @@ const init = async () => {
   alreadyRespondedGuesses.forEach(event => guessesRespondedTo.push(event.returnValues.guessNumber));
   if (guessesRespondedTo.length > 0 ) { console.log(`\nAlready responded to ${guessesRespondedTo.join(", ")} for this wordId`) }
 
-  // Listen to guesses event stream and respond to them
-  // TODO: Recursive instead of interval, to avoid double spending?
-  let intervalId = setInterval(async () => {
+  let responseFunction = async () =>  {
     let balance = await web3.eth.getBalance(connectedAccount.address);
 
     // hard coded filter for word number for now. Eventually get from public variable in contract.
@@ -61,10 +60,17 @@ const init = async () => {
     let rightNow = new Date();
     console.log(`${rightNow.getHours()}:${rightNow.getMinutes()}:${rightNow.getSeconds()} | ${ACCOUNT.network} ${connectedAccount.address.substring(0, 6)} | Word ${wordNumber} ${theSecretWord} | Oracle Balance ${(balance / WEI_IN_AN_ETHER).toPrecision(5) } | ${events.length} Guesses`);
 
-    events.forEach(async (event) => {
+    // LOL forEach can't be usesd with async/await patterns. TIL: https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
+    // events.forEach(async (event) => {
+    for (const event of events) {
+      // Get the current wordId to make sure the guess matches it
+      wordNumber = await connectedContract.methods.id().call();
+      if (event.returnValues.id != wordNumber) {
+        console.log(`\Received guess #${event.returnValues.guessNumber} for word #${event.returnValues.id}, but we are on word #${wordNumber}`);
+      }
 
-      // Respond to any new events
-      if (!guessesRespondedTo.includes(event.returnValues.guessNumber)) {
+      // Respond to any new events FOR THIS WORD ID. Skip any guesses that came after winning guess.
+      if (event.returnValues.id == wordNumber && !guessesRespondedTo.includes(event.returnValues.guessNumber)) {
         console.log(`\nWord ${wordNumber}, Guess ${event.returnValues.guessNumber}: ${web3.utils.hexToUtf8(event.returnValues.wordGuessed)}`);
         let guessedWord = web3.utils.hexToUtf8(event.returnValues.wordGuessed).toUpperCase();
         let responseCode = cursedWordGuessResponse(guessedWord);
@@ -86,11 +92,13 @@ const init = async () => {
           gas: 250_000, // TODO make sane idk
           value: 0, // value to xfer in wei
           // nonce (optional)
-        })
+        });
 
         console.log(`\n=== Response Tx sent for ${responseResult.gasUsed} gas | Hash ${responseResult.transactionHash} ===`);
 
         // This guess won, the smart contract will increment and so will we
+        // In theory this will only first once because even if multiple guesses come in on the same word number,
+        // we will increment wordNumber on the first we see not check any events from that wordNumber again.
         if (responseCode === 33333) {
           // Send the winner some CWCoins and the CWNFT
           await connectedCoinContract.methods.mint(event.returnValues.guesser, web3.utils.toWei(COIN_REWARD)).send({
@@ -101,7 +109,7 @@ const init = async () => {
             value: 0, // value to xfer in wei
             // nonce (optional)
           });
-          console.log(`\n===Sent ${COIN_REWARD} CWCoin reward to winner!`);
+          console.log(`\n=== Sent ${COIN_REWARD} CWCoin reward to winner!`);
 
           // Send the winner an NFT for their winning guess
           await connectedNFTContract.methods.safeMint(event.returnValues.guesser, wordNumber).send({
@@ -112,16 +120,20 @@ const init = async () => {
             value: 0, // value to xfer in wei
             // nonce (optional)
           });
-          console.log(`\n===Sent NFT Trophy to winner!`);
+          console.log(`\n=== Sent NFT Trophy #${wordNumber} to winner!\n`);
 
-          wordNumber += 1;
           theSecretWord = ORDERED_WORD_OBJECT[`${wordNumber}`];
           guessesRespondedTo = [];
         }
       }
-    });
+    }
 
-  }, 1 * 1000);
+    // recur!
+    setTimeout(responseFunction, POLL_RATE);
+  }
+
+  // Listen to guesses event stream and respond to them
+  setTimeout(responseFunction, POLL_RATE);
 };
 
 function cursedWordGuessResponse(guess) {
