@@ -37,7 +37,7 @@ import Web3 from 'web3';
 
 
 // Compiled smart contract code for interaction
-const CURSED_WORD_GAME_CONTRACT = require('../../contracts/CursedWordV3.json');
+const CURSED_WORD_GAME_CONTRACT = require('../../contracts/TestCWGU.json');
 const CURSED_WORD_COIN_CONTRACT = require('../../contracts/CursedWordCoin.json');
 const ACCOUNT = require('../../account.json');
 
@@ -179,10 +179,17 @@ export default {
     submitGuess: async function() {
       this.inputLocked = true;
 
+      const currentGasPrice = await this.web3.eth.getGasPrice();
+
+      // TODO verify: this is enough eth to send to oracle and cover costs
+      const txValue = currentGasPrice * 50000;
+
+      console.log(txValue);
+
       const transactionParameters = {
         to: ACCOUNT.deployedGameAddress,
         from: window.ethereum.selectedAddress,
-        value: (0.001 * WEI_IN_AN_ETHER).toString(16),
+        value: (txValue).toString(16),
         data: this.connectedContract.methods.attempt(this.wordId, this.web3.utils.utf8ToHex(this.currentGuess)).encodeABI(),
       };
 

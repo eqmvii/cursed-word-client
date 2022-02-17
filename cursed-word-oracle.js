@@ -2,7 +2,7 @@
 // Knows the secret word and responds to guesses from cursed-word-client
 
 const Web3 = require('web3');
-const CURSED_WORD_CONTRACT = require('./contracts/CursedWordV3.json');
+const CURSED_WORD_CONTRACT = require('./contracts/TestCWGU.json');
 const ACCOUNT = require('./account.json');
 const SECRET = require('./secret.json');
 const ORDERED_WORD_OBJECT = require('./sorted-word-list.json');

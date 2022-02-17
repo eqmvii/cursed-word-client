@@ -1,5 +1,7 @@
 # Punchlist
 
+* Estimate gas before send
+* Separate the coin and NFT contracts and make the base upgradeable.
 * Add columns to include who guessed and maybe guess button
 * Write up instructions and costs
 * Consider real deployment and require infrastructure
