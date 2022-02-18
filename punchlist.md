@@ -1,9 +1,10 @@
 # Punchlist
 
-* clear forEach due to async risk in CursedWord.vue
+* Consider real deployment and require infrastructure
+
 * Add columns to include who guessed and maybe guess button
 * Write up instructions and costs
-* Consider real deployment and require infrastructure
+
 * What happens if you hit 224 words?
 * Keyboard styling refactor & cleaning
 * Larger dictionary to enforce real word guesses clientside
@@ -12,7 +13,6 @@
 * Write game logs
 * Do I need vue router and routes? For rules, non-blockchain version, NFT display, etc.?
 * Refactor guesses responded to so that it's by wordId and guess number?
-* Remove game contract eth balance
 
 # nice to have
 
@@ -20,6 +20,9 @@
 
 # DONE
 
+* Turn on guard for eth sent
+* clear forEach due to async risk in CursedWord.vue
+* Remove game contract eth balance
 * Cursed Word Coin send
 * Clean up "tokenomics" lmao
 * CWC balance

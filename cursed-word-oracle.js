@@ -87,47 +87,53 @@ const init = async () => {
         // TODO think about bug/fail state here
         guessesRespondedTo.push(event.returnValues.guessNumber);
 
-        // TODO: Understand and fixup these gas values
-        let responseResult = await connectedContract.methods.respond_to_guess(wordNumber, event.returnValues.guessNumber, event.returnValues.guesser, web3.utils.utf8ToHex(guessedWord), responseCode).send({
-          from: ACCOUNT.oracleAddress,
-          // gasPrice (optional - gas price in wei),
-          gas: 250_000, // (optional) gas limit for this transaction
-          value: 0, // value to xfer in wei
-          // nonce (optional)
-        });
-
-        console.log(`\n=== Response Tx sent for ${responseResult.gasUsed} gas | Hash ${responseResult.transactionHash} ===`);
+        try {
+          // TODO: Understand and fixup these gas values
+          let responseResult = await connectedContract.methods.respond_to_guess(wordNumber, event.returnValues.guessNumber, event.returnValues.guesser, web3.utils.utf8ToHex(guessedWord), responseCode).send({
+            from: ACCOUNT.oracleAddress,
+            // gasPrice (optional - gas price in wei),
+            gas: 250_000, // (optional) gas limit for this transaction
+            value: 0, // value to xfer in wei
+            // nonce (optional)
+          });
+          console.log(`\n=== Response Tx sent for ${responseResult.gasUsed} gas | Hash ${responseResult.transactionHash} ===`);
+        } catch (e) {
+          console.log('\n=== Rejectedresponse, THIS ONE IS BAD IDK ~ \n\n', e);
+        }
 
         // This guess won, the smart contract will increment and so will we
         // In theory this will only first once because even if multiple guesses come in on the same word number,
         // we will increment wordNumber on the first we see not check any events from that wordNumber again.
         if (responseCode === 33333) {
-          // Send the winner some CWCoins and the CWNFT
-          await connectedCoinContract.methods.mint(event.returnValues.guesser, web3.utils.toWei(COIN_REWARD)).send({
-            from: ACCOUNT.oracleAddress,
-            // gasPrice (optional - gas price in wei),
-            gas: 250_000, // (optional) gas limit for this transaction
-            value: 0, // value to xfer in wei
-            // nonce (optional)
-          });
-          console.log(`\n=== Sent ${COIN_REWARD} CWCoin reward to winner!`);
+          try {
+            // Send the winner some CWCoins and the CWNFT
+            await connectedCoinContract.methods.mint(event.returnValues.guesser, web3.utils.toWei(COIN_REWARD)).send({
+              from: ACCOUNT.oracleAddress,
+              gas: 250_000,
+              value: 0,
+            });
+            console.log(`\n=== Sent ${COIN_REWARD} CWCoin reward to winner!`);
+          } catch (e) {
+            console.log('\n===Rejected Coin mint promise\n\n', e);
+          }
 
           // Send the winner an NFT for their winning guess
-          await connectedNFTContract.methods.safeMint(event.returnValues.guesser, wordNumber).send({
-            from: ACCOUNT.oracleAddress,
-            // gasPrice (optional - gas price in wei),
-            gas: 250_000, // (optional) gas limit for this transaction
-            value: 0, // value to xfer in wei
-            // nonce (optional)
-          });
-          console.log(`\n=== Sent NFT Trophy #${wordNumber} to winner!\n`);
+          try {
+            await connectedNFTContract.methods.safeMint(event.returnValues.guesser, wordNumber).send({
+              from: ACCOUNT.oracleAddress,
+              gas: 250_000,
+              value: 0, // value to xfer in wei
+            });
+            console.log(`\n=== Sent NFT Trophy #${wordNumber} to winner!\n`);
+          } catch (e) {
+            console.log('\n=== Rejected NFT mint promise\n\n', e);
+          }
 
-          guessesRespondedTo = []; // TODO ERIC: this is slightly buggy if multiple guesses come in after a win
+          guessesRespondedTo = []; // TODO: this is slightly buggy if multiple guesses come in after a win
         }
       }
     }
 
-    // recur!
     setTimeout(responseFunction, POLL_RATE);
   }
 

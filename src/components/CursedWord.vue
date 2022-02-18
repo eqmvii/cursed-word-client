@@ -27,13 +27,12 @@
     </div>
     <Keyboard :guesses="guesses" :results="results" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
     <EnableEthereumButton @metamask-connected="connect"/>
-    <p v-if="this.address">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} | {{ this.ethBalance }} Eth | {{ this.cwcBalance }} CWCoin </p>
+    <p v-if="this.address && this.ethBalance">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} | {{ this.ethBalance }} Eth | {{ this.cwcBalance }} CWCoin </p>
   </div>
 </template>
 
 <script>
 import Web3 from 'web3';
-
 
 // Compiled smart contract code for interaction
 const CURSED_WORD_GAME_CONTRACT = require('../../contracts/TestCWGU.json');
@@ -58,16 +57,13 @@ export default {
     ResetButton,
     SpinningIcon
   },
-  props: {
-    msg: String
-  },
   data() {
     return {
       currentGuess: '',
       guesses: [],
       otherPlayerGuesses: [],
-      connectedContract: {}, // TODO: null?
-      connectedCoinContract: {},
+      connectedContract: null,
+      connectedCoinContract: null,
       web3: null,
       results: {},
       yellowLetters: [],
@@ -79,12 +75,11 @@ export default {
       defeat: false,
       wordId: null,
       address: null,
-      ethBalance: 0, // TODO: Null? With conditionals?
+      ethBalance: null,
       cwcBalance: null,
       gameLoopInterval: null,
     }
   },
-  // TODO ERIC: Handle random connection to an in-progress game.
   async mounted() {
     // Listen for keystrokes
     // TODO: remove this in beforeDestroy if implementing toggle
@@ -118,59 +113,59 @@ export default {
       this.wordId = await this.connectedContract.methods.id().call();
       this.inputLocked = false;
 
-      this.gameLoopInterval = setInterval(async () => {
-
+      let responsePollFunc = async () => {
         this.updateBalances();
-        // TODO: Block 0 or latest or nothing below?
-        this.connectedContract.getPastEvents('GuessResult', { fromBlock: 0, filter: { id: this.wordId } }).then((events) => {
-          events.forEach(event => {
-            if (!this.resultsReceived.includes(event.returnValues.guessNumber)) {
-              this.awaitingResult = false;
-              // new result received, record it and allow new entry
-              let receivedWordGuess = this.web3.utils.hexToUtf8(event.returnValues.wordGuessed).toUpperCase();
-              let receivedCodedResult = event.returnValues.result;
-              let stringifiedReceivedCodedResult = `${receivedCodedResult}`;
-              let guesserAddress = event.returnValues.guesser.toLowerCase();
-              this.results[receivedWordGuess] = event.returnValues.result;
-              this.guesses.push(receivedWordGuess);
+        let events = await this.connectedContract.getPastEvents('GuessResult', { fromBlock: 0, filter: { id: this.wordId } });
 
-              if (this.address != guesserAddress) {
-                this.otherPlayerGuesses.push(receivedWordGuess);
-              }
+        for (const event of events) {
+          if (!this.resultsReceived.includes(event.returnValues.guessNumber)) {
+            this.awaitingResult = false;
+            // new result received, record it and allow new entry
+            let receivedWordGuess = this.web3.utils.hexToUtf8(event.returnValues.wordGuessed).toUpperCase();
+            let receivedCodedResult = event.returnValues.result;
+            let stringifiedReceivedCodedResult = `${receivedCodedResult}`;
+            let guesserAddress = event.returnValues.guesser.toLowerCase();
+            this.results[receivedWordGuess] = event.returnValues.result;
+            this.guesses.push(receivedWordGuess);
 
-              let numGreens = 0;
+            if (this.address != guesserAddress) {
+              this.otherPlayerGuesses.push(receivedWordGuess);
+            }
 
-              for (let i = 0; i < receivedWordGuess.length; i++) {
-                if (stringifiedReceivedCodedResult[i] === '2') {
-                  this.yellowLetters.push(receivedWordGuess[i].toUpperCase());
-                  // TODO: uniqueify ?
-                } else if (stringifiedReceivedCodedResult[i] === '3') {
-                  this.greenLetters.push(receivedWordGuess[i].toUpperCase());
-                  numGreens += 1;
-                }
-              }
+            let numGreens = 0;
 
-              this.resultsReceived.push(event.returnValues.guessNumber);
-
-              // If the returned result is the current guess, clear it out
-              if (this.guesses.includes(this.currentGuess)) {
-                this.currentGuess = '';
-              }
-
-              if (numGreens === 5 && this.address === guesserAddress) {
-                clearInterval(this.gameLoopInterval);
-                this.updateBalances();
-                this.inputLocked = true;
-                this.victory = true;
-              } else if (numGreens === 5) {
-                clearInterval(this.gameLoopInterval);
-                this.inputLocked = true;
-                this.defeat = true;
+            for (let i = 0; i < receivedWordGuess.length; i++) {
+              if (stringifiedReceivedCodedResult[i] === '2') {
+                this.yellowLetters.push(receivedWordGuess[i].toUpperCase());
+                // TODO: uniqueify ?
+              } else if (stringifiedReceivedCodedResult[i] === '3') {
+                this.greenLetters.push(receivedWordGuess[i].toUpperCase());
+                numGreens += 1;
               }
             }
-          });
-        });
-      }, 1 * 1000);
+
+            this.resultsReceived.push(event.returnValues.guessNumber);
+
+            // If the returned result is the current guess, clear it out
+            if (this.guesses.includes(this.currentGuess)) {
+              this.currentGuess = '';
+            }
+
+            if (numGreens === 5 && this.address === guesserAddress) {
+              clearInterval(this.gameLoopInterval);
+              this.updateBalances();
+              this.inputLocked = true;
+              this.victory = true;
+            } else if (numGreens === 5) {
+              clearInterval(this.gameLoopInterval);
+              this.inputLocked = true;
+              this.defeat = true;
+            }
+          }
+        }
+      }
+
+      this.gameLoopInterval = setInterval(responsePollFunc, 1 * 1000);
     },
     submitGuess: async function() {
       this.inputLocked = true;
@@ -179,22 +174,25 @@ export default {
 
       // Collect enough eth to cover cost of oracle server calling reply function in game contract.
       // Replies use just under 50k gas in the worst case scenario.
-      // TODO: Increase if also calling mint functions?
+      // TODO LIVE: Make better, this fails in weird ways due to test net price fixing
       const txValue = currentGasPrice * 115000;
-      console.log(currentGasPrice);
-      console.log(txValue);
 
       const transactionParameters = {
         to: ACCOUNT.deployedGameAddress,
         from: window.ethereum.selectedAddress,
         value: (txValue).toString(16),
+        // value: (1000000000000000).toString(16),
         data: this.connectedContract.methods.attempt(this.wordId, this.web3.utils.utf8ToHex(this.currentGuess)).encodeABI(),
       };
 
-      await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [transactionParameters],
-      });
+      try {
+        await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [transactionParameters],
+        });
+      } catch (e) {
+        console.log('Error sending guess: ', e);
+      }
 
       this.inputLocked = false;
       this.awaitingResult = true;
