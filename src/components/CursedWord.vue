@@ -1,7 +1,6 @@
 <template>
   <div class="word-game">
     <h1>Cursed Word {{ this.wordId }}</h1>
-    <p v-if="this.contractBalance">Game Contract Balance: {{ this.contractBalance }} Eth</p>
     <br/>
     <GuessList
       v-if="address"
@@ -83,7 +82,6 @@ export default {
       ethBalance: 0, // TODO: Null? With conditionals?
       cwcBalance: null,
       gameLoopInterval: null,
-      contractBalance: null,
     }
   },
   // TODO ERIC: Handle random connection to an in-progress game.
@@ -220,7 +218,6 @@ export default {
     updateBalances: async function() {
       this.ethBalance = ((await this.web3.eth.getBalance(this.address)) / WEI_IN_AN_ETHER).toPrecision(4);
       this.cwcBalance = ((await this.connectedCoinContract.methods.balanceOf(this.address).call()) / WEI_IN_AN_ETHER).toPrecision(4);
-      this.contractBalance = ((await this.web3.eth.getBalance(ACCOUNT.deployedGameAddress)) / WEI_IN_AN_ETHER).toPrecision(4);
     },
   }
 }

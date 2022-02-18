@@ -9,7 +9,7 @@ const ACCOUNT = require('./account.json');
 const SECRET = require('./secret.json');
 const ORDERED_WORD_OBJECT = require('./sorted-word-list.json');
 const WEI_IN_AN_ETHER = 1000000000000000000;
-const POLL_RATE = 1 * 1000; // 1 second
+const POLL_RATE = 1.5 * 1000; // 1 second ; infura connection only allows 100,000 request/day on free tier SO.
 
 const COIN_REWARD = '10'; // string for big number conversion
 
@@ -91,8 +91,7 @@ const init = async () => {
         let responseResult = await connectedContract.methods.respond_to_guess(wordNumber, event.returnValues.guessNumber, event.returnValues.guesser, web3.utils.utf8ToHex(guessedWord), responseCode).send({
           from: ACCOUNT.oracleAddress,
           // gasPrice (optional - gas price in wei),
-          // gas (optional - max gas limit)
-          gas: 250_000, // TODO make sane idk
+          gas: 250_000, // (optional) gas limit for this transaction
           value: 0, // value to xfer in wei
           // nonce (optional)
         });
@@ -107,8 +106,7 @@ const init = async () => {
           await connectedCoinContract.methods.mint(event.returnValues.guesser, web3.utils.toWei(COIN_REWARD)).send({
             from: ACCOUNT.oracleAddress,
             // gasPrice (optional - gas price in wei),
-            // gas (optional - max gas limit)
-            gas: 250_000, // TODO make sane idk
+            gas: 250_000, // (optional) gas limit for this transaction
             value: 0, // value to xfer in wei
             // nonce (optional)
           });
@@ -118,8 +116,7 @@ const init = async () => {
           await connectedNFTContract.methods.safeMint(event.returnValues.guesser, wordNumber).send({
             from: ACCOUNT.oracleAddress,
             // gasPrice (optional - gas price in wei),
-            // gas (optional - max gas limit)
-            gas: 250_000, // TODO make sane idk
+            gas: 250_000, // (optional) gas limit for this transaction
             value: 0, // value to xfer in wei
             // nonce (optional)
           });
