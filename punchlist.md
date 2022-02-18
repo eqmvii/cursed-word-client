@@ -4,7 +4,7 @@
 
 * Add columns to include who guessed and maybe guess button
 * Write up instructions and costs
-
+* Handle "Nonce too low errors" -- probably coming from trying to respond + mint in rapid succession
 * What happens if you hit 224 words?
 * Keyboard styling refactor & cleaning
 * Larger dictionary to enforce real word guesses clientside
