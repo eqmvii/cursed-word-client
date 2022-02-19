@@ -28,7 +28,6 @@ export default {
   name: 'Keyboard',
   props: {
     guesses: Array,
-    results: Object,
     yellowLetters: Array,
     greenLetters: Array
   },

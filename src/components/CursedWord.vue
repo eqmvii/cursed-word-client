@@ -6,7 +6,6 @@
       v-if="address"
       :currentGuess="currentGuess"
       :guesses="guesses"
-      :results="results"
       :won="victory"
       :myAddress="address"
     />
@@ -24,7 +23,7 @@
       <ResetButton @reset="resetGame"/>
       <br />
     </div>
-    <Keyboard :guesses="guesses" :results="results" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
+    <Keyboard :guesses="guesses" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
     <EnableEthereumButton @metamask-connected="connect"/>
     <p v-if="this.address && this.ethBalance">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} <strong>|</strong> {{ this.ethBalance }} Eth <strong>|</strong> {{ this.cwcBalance }} CW Coins </p>
   </div>
@@ -63,7 +62,6 @@ export default {
       connectedContract: null,
       connectedCoinContract: null,
       web3: null,
-      results: {},
       yellowLetters: [],
       greenLetters: [],
       resultsReceived: [],
@@ -123,8 +121,7 @@ export default {
             let receivedCodedResult = event.returnValues.result;
             let stringifiedReceivedCodedResult = `${receivedCodedResult}`;
             let guesserAddress = event.returnValues.guesser.toLowerCase();
-            this.results[receivedWordGuess] = event.returnValues.result;
-            this.guesses.push({ guess: receivedWordGuess, guesser: event.returnValues.guesser });
+            this.guesses.push({ guess: receivedWordGuess, guesser: event.returnValues.guesser, result: receivedCodedResult });
 
             let numGreens = 0;
 
@@ -194,9 +191,9 @@ export default {
     resetGame: async function() {
       this.currentGuess = '';
       this.guesses = [];
-      this.results = {};
       this.yellowLetters = [];
       this.greenLetters = [];
+      // TODO ERIC refactor to remove, just use guesses
       this.resultsReceived = [];
       this.inputLocked = false;
       this.awaitingResult = false;
