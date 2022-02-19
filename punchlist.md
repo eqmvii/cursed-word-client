@@ -1,8 +1,6 @@
 # Punchlist
 
 * Consider real deployment and require infrastructure
-
-* Add columns to include who guessed and maybe guess button
 * Write up instructions and costs
 * Handle "Nonce too low errors" -- probably coming from trying to respond + mint in rapid succession
 * What happens if you hit 224 words?
@@ -10,9 +8,8 @@
 * Larger dictionary to enforce real word guesses clientside
 * Read more about HD wallets and nemonics: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 * Save randomized dictionary to a file
-* Write game logs
 * Do I need vue router and routes? For rules, non-blockchain version, NFT display, etc.?
-* Refactor guesses responded to so that it's by wordId and guess number?
+
 
 # nice to have
 
@@ -20,6 +17,10 @@
 
 # DONE
 
+* refactor to remove results received and results, let it all live in guesses as an object
+* Refactor guesses responded to so that it's by wordId and guess number?
+* aws
+* Add columns to include who guessed and maybe guess button
 * Turn on guard for eth sent
 * clear forEach due to async risk in CursedWord.vue
 * Remove game contract eth balance

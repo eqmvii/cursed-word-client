@@ -64,7 +64,6 @@ export default {
       web3: null,
       yellowLetters: [],
       greenLetters: [],
-      resultsReceived: [],
       inputLocked: true,
       awaitingResult: false,
       victory: false,
@@ -114,14 +113,19 @@ export default {
         let events = await this.connectedContract.getPastEvents('GuessResult', { fromBlock: 0, filter: { id: this.wordId } });
 
         for (const event of events) {
-          if (!this.resultsReceived.includes(event.returnValues.guessNumber)) {
+          if (!this.guesses.map(g => g.guessNumber).includes(event.returnValues.guessNumber)) {
             this.awaitingResult = false;
-            // new result received, record it and allow new entry
             let receivedWordGuess = this.web3.utils.hexToUtf8(event.returnValues.wordGuessed).toUpperCase();
             let receivedCodedResult = event.returnValues.result;
             let stringifiedReceivedCodedResult = `${receivedCodedResult}`;
             let guesserAddress = event.returnValues.guesser.toLowerCase();
-            this.guesses.push({ guess: receivedWordGuess, guesser: event.returnValues.guesser, result: receivedCodedResult });
+            this.guesses.push({
+              guess: receivedWordGuess,
+              guesser: event.returnValues.guesser,
+              result: receivedCodedResult,
+              wordId: event.returnValues.id,
+              guessNumber: event.returnValues.guessNumber
+            });
 
             let numGreens = 0;
 
@@ -134,8 +138,6 @@ export default {
                 numGreens += 1;
               }
             }
-
-            this.resultsReceived.push(event.returnValues.guessNumber);
 
             // If I just got the result from MY guess, let me guess again
             if (this.currentGuess === receivedWordGuess && this.address.toLowerCase() === guesserAddress) {
@@ -193,8 +195,6 @@ export default {
       this.guesses = [];
       this.yellowLetters = [];
       this.greenLetters = [];
-      // TODO ERIC refactor to remove, just use guesses
-      this.resultsReceived = [];
       this.inputLocked = false;
       this.awaitingResult = false;
       this.victory = false;
