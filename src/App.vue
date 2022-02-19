@@ -1,4 +1,6 @@
 <template>
+  <router-link to="/nftest">NFTest</router-link>
+  <router-view></router-view>
   <CursedWord v-if="appMode == 'blockchain' && !showToggle"/>
   <GuessWord v-if="appMode == 'sane' && !showToggle"/>
   <div v-if="showToggle">
@@ -11,12 +13,14 @@
 <script>
 import CursedWord from './components/CursedWord.vue';
 import GuessWord from './components/GuessWord.vue';
+import RouterLink from 'vue-router';
 
 export default {
   name: 'App',
   components: {
     CursedWord,
-    GuessWord
+    GuessWord,
+    RouterLink
   },
   data() {
     return {
