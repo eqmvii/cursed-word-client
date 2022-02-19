@@ -18,6 +18,7 @@ const DEPLOYED_CONTRACT_ADDRESS = ACCOUNT.deployedGameAddress;
 const DEPLOYED_COIN_ADDRESS = ACCOUNT.deployedCoinAddress;
 const DEPLOYED_NFT_ADDRESS = ACCOUNT.deployedNFTAddress;
 
+// TODO refactor to just hold all guess events receieved, like FE now does
 let guessesRespondedTo = [];
 let theSecretWord;
 
@@ -25,8 +26,6 @@ let theSecretWord;
 // Fresh account address: 0xcbc4efe8CCf05a9435089e2F8F68622abBb7642e
 // Send faucet eth here to allow for smart contract communication
 // ==== END test keys
-
-// TODO: Handle reconnect. Dictionary probably needs to be in the same order, and try not to re-send results.
 
 const init = async () => {
   console.log('\nInitializing connection to Ethereum blockchain...');
@@ -58,11 +57,6 @@ const init = async () => {
     if (LOG_BALANCE) {
       balance = await web3.eth.getBalance(connectedAccount.address);
     }
-
-    // TODO: this gets SUPER EXPENSIVE while it sits with open guesses. every 1.5 seconds you do 1x eth call per open guess.
-    // Get the current wordId and word to make sure the guess matches it
-    wordNumber = await connectedContract.methods.id().call();
-    theSecretWord = ORDERED_WORD_OBJECT[`${wordNumber}`];
 
     // hard coded filter for word number for now. Eventually get from public variable in contract.
     let events = await connectedContract.getPastEvents('GuessReceived', { fromBlock: 0, filter: { id: wordNumber } });
@@ -102,39 +96,46 @@ const init = async () => {
             // nonce (optional)
           });
           console.log(`\n=== Response Tx sent for ${responseResult.gasUsed} gas | Hash ${responseResult.transactionHash} ===`);
+
+          // This guess won, the smart contract will increment and so will we
+          // In theory this will only first once because even if multiple guesses come in on the same word number,
+          // we will increment wordNumber on the first we see not check any events from that wordNumber again.
+          if (responseCode === 33333) {
+            // TODO: this gets SUPER EXPENSIVE while it sits with open guesses. every 1.5 seconds you do 1x eth call per open guess.
+            // Get the current wordId and word to make sure the guess matches it
+            // wordNumber = await connectedContract.methods.id().call();
+            wordNumber += 1;
+            theSecretWord = ORDERED_WORD_OBJECT[`${wordNumber}`];
+
+            // Send the winner some CWCoins and the CWNFT
+            try {
+
+              await connectedCoinContract.methods.mint(event.returnValues.guesser, web3.utils.toWei(COIN_REWARD)).send({
+                from: ACCOUNT.oracleAddress,
+                gas: 250_000,
+                value: 0,
+              });
+              console.log(`\n=== Sent ${COIN_REWARD} CWCoin reward to winner!`);
+            } catch (e) {
+              console.log('\n===Rejected Coin mint promise\n\n', e);
+            }
+
+                      // Send the winner an NFT for their winning guess
+            try {
+              await connectedNFTContract.methods.safeMint(event.returnValues.guesser, wordNumber).send({
+                from: ACCOUNT.oracleAddress,
+                gas: 250_000,
+                value: 0, // value to xfer in wei
+              });
+              console.log(`\n=== Sent NFT Trophy #${wordNumber} to winner!\n`);
+            } catch (e) {
+              console.log('\n=== Rejected NFT mint promise\n\n', e);
+            }
+
+            guessesRespondedTo = []; // TODO: this is slightly buggy if multiple guesses come in after a win
+          }
         } catch (e) {
           console.log('\n=== Rejectedresponse, THIS ONE IS BAD IDK ~ \n\n', e);
-        }
-
-        // This guess won, the smart contract will increment and so will we
-        // In theory this will only first once because even if multiple guesses come in on the same word number,
-        // we will increment wordNumber on the first we see not check any events from that wordNumber again.
-        if (responseCode === 33333) {
-          try {
-            // Send the winner some CWCoins and the CWNFT
-            await connectedCoinContract.methods.mint(event.returnValues.guesser, web3.utils.toWei(COIN_REWARD)).send({
-              from: ACCOUNT.oracleAddress,
-              gas: 250_000,
-              value: 0,
-            });
-            console.log(`\n=== Sent ${COIN_REWARD} CWCoin reward to winner!`);
-          } catch (e) {
-            console.log('\n===Rejected Coin mint promise\n\n', e);
-          }
-
-          // Send the winner an NFT for their winning guess
-          try {
-            await connectedNFTContract.methods.safeMint(event.returnValues.guesser, wordNumber).send({
-              from: ACCOUNT.oracleAddress,
-              gas: 250_000,
-              value: 0, // value to xfer in wei
-            });
-            console.log(`\n=== Sent NFT Trophy #${wordNumber} to winner!\n`);
-          } catch (e) {
-            console.log('\n=== Rejected NFT mint promise\n\n', e);
-          }
-
-          guessesRespondedTo = []; // TODO: this is slightly buggy if multiple guesses come in after a win
         }
       }
     }
