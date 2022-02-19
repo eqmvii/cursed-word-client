@@ -1,5 +1,6 @@
 # Punchlist
 
+* Get history in web not hash mode: createWebHistory
 * Consider real deployment and require infrastructure
 * Write up instructions and costs
 * Handle "Nonce too low errors" -- probably coming from trying to respond + mint in rapid succession

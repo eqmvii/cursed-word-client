@@ -3,7 +3,8 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 import App from './App.vue';
 
-console.log(App);
+import CursedWord from './components/CursedWord';
+import GuessWord from './components/GuessWord';
 
 // 1. Define route components.
 // These can be imported from other files
@@ -14,7 +15,8 @@ console.log(App);
 // Each route should map to a component.
 // We'll talk about nested routes later.
 const routes = [
-  { path: '/', component: App },
+  { path: '/', component: CursedWord },
+  { path: '/classic', component: GuessWord },
   // { path: '/about', component: About },
 ]
 
@@ -29,7 +31,7 @@ const router = createRouter({
 
 // 5. Create and mount the root instance.
 const app  = createApp({
-  render: ()=>h(App)
+  render: () => h(App)
 });
 // Make sure to _use_ the router instance to make the
 // whole app router-aware.

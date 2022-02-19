@@ -1,26 +1,25 @@
 <template>
-  <router-link to="/nftest">NFTest</router-link>
   <router-view></router-view>
-  <CursedWord v-if="appMode == 'blockchain' && !showToggle"/>
+  <!-- <CursedWord v-if="appMode == 'blockchain' && !showToggle"/>
   <GuessWord v-if="appMode == 'sane' && !showToggle"/>
   <div v-if="showToggle">
     <h1>Worsle or Wordle?</h1>
     <button class="mode-button" @click="chooseMode('blockchain')">Blockchain</button>
     <button class="mode-button" @click="chooseMode('sane')">Sane</button>
-  </div>
+  </div> -->
 </template>
 
 <script>
-import CursedWord from './components/CursedWord.vue';
-import GuessWord from './components/GuessWord.vue';
-import RouterLink from 'vue-router';
+// import CursedWord from './components/CursedWord.vue';
+// import GuessWord from './components/GuessWord.vue';
+// import RouterLink from 'vue-router';
 
 export default {
   name: 'App',
   components: {
-    CursedWord,
-    GuessWord,
-    RouterLink
+    // CursedWord,
+    // GuessWord,
+    // RouterLink
   },
   data() {
     return {

@@ -25,7 +25,7 @@
 
 <script>
 export default {
-  name: 'Keyboard',
+  name: 'KeyboardElement',
   props: {
     guesses: Array,
     yellowLetters: Array,

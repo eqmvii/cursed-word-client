@@ -23,7 +23,7 @@
       <ResetButton @reset="resetGame"/>
       <br />
     </div>
-    <Keyboard :guesses="guesses" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
+    <KeyboardElement :guesses="guesses" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
     <EnableEthereumButton @metamask-connected="connect"/>
     <p v-if="this.address && this.ethBalance">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} <strong>|</strong> {{ this.ethBalance }} Eth <strong>|</strong> {{ this.cwcBalance }} CW Coins </p>
 
@@ -51,7 +51,7 @@ const WEI_IN_AN_ETHER = 1000000000000000000;
 
 import EnableEthereumButton from './EnableEthereumButton';
 import GuessList from './GuessList';
-import Keyboard from './Keyboard';
+import KeyboardElement from './KeyboardElement';
 import ModalElement from './ModalElement';
 import ResetButton from './ResetButton';
 import SpinningIcon from './SpinningIcon';
@@ -61,7 +61,7 @@ export default {
   name: 'CursedWord',
   components: {
     GuessList,
-    Keyboard,
+    KeyboardElement,
     ModalElement,
     EnableEthereumButton,
     ResetButton,

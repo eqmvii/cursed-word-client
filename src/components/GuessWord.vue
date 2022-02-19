@@ -15,13 +15,13 @@
       <ResetButton @reset="resetGame"/>
       <br />
     </div>
-    <Keyboard :guesses="guesses" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
+    <KeyboardElement :guesses="guesses" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
   </div>
 </template>
 
 <script>
 import GuessList from './GuessList';
-import Keyboard from './Keyboard';
+import KeyboardElement from './KeyboardElement';
 import ResetButton from './ResetButton';
 import SpinningIcon from './SpinningIcon';
 
@@ -31,7 +31,7 @@ export default {
   name: 'GuessWord',
   components: {
     GuessList,
-    Keyboard,
+    KeyboardElement,
     ResetButton,
     SpinningIcon
   },
