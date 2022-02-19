@@ -9,7 +9,7 @@ const ACCOUNT = require('./account.json');
 const SECRET = require('./secret.json');
 const ORDERED_WORD_OBJECT = require('./sorted-word-list.json');
 const WEI_IN_AN_ETHER = 1000000000000000000;
-const POLL_RATE = 1.5 * 1000; // 1 second ; infura connection only allows 100,000 request/day on free tier SO.
+const POLL_RATE = 3 * 1000; // 3 seconds ; infura connection only allows 100,000 request/day on free tier SO.
 const LOG_BALANCE = ACCOUNT.network === 'localhost';
 
 const COIN_REWARD = '10'; // string for big number conversion
@@ -59,20 +59,20 @@ const init = async () => {
       balance = await web3.eth.getBalance(connectedAccount.address);
     }
 
+    // TODO: this gets SUPER EXPENSIVE while it sits with open guesses. every 1.5 seconds you do 1x eth call per open guess.
+    // Get the current wordId and word to make sure the guess matches it
+    wordNumber = await connectedContract.methods.id().call();
+    theSecretWord = ORDERED_WORD_OBJECT[`${wordNumber}`];
+
     // hard coded filter for word number for now. Eventually get from public variable in contract.
     let events = await connectedContract.getPastEvents('GuessReceived', { fromBlock: 0, filter: { id: wordNumber } });
 
     let rightNow = new Date();
-    console.log(`${rightNow.getHours()}:${rightNow.getMinutes()}:${rightNow.getSeconds()} | ${ACCOUNT.network} ${connectedAccount.address.substring(0, 6)} | Word ${wordNumber} ${theSecretWord} | Balance (${LOG_BALANCE}) ${(balance / WEI_IN_AN_ETHER).toPrecision(5) } | ${events.length} Guesses`);
+    console.log(`${rightNow.getHours()}:${rightNow.getMinutes()}:${rightNow.getSeconds()} | ${ACCOUNT.network} ${ACCOUNT.oracleAddress.substring(0, 6)} | Word ${wordNumber} ${theSecretWord} | Balance (${LOG_BALANCE}) ${(balance / WEI_IN_AN_ETHER).toPrecision(5) } | ${events.length} Guesses`);
 
     // LOL forEach can't be usesd with async/await patterns. TIL: https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
     // events.forEach(async (event) => {
     for (const event of events) {
-
-      // Get the current wordId and word to make sure the guess matches it
-      wordNumber = await connectedContract.methods.id().call();
-      theSecretWord = ORDERED_WORD_OBJECT[`${wordNumber}`];
-
       if (event.returnValues.id != wordNumber) {
         console.log(`\Received guess #${event.returnValues.guessNumber} for word #${event.returnValues.id}, but we are on word #${wordNumber}`);
       }
