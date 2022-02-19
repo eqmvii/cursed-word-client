@@ -32,7 +32,6 @@ export default {
   props: {
     currentGuess: String,
     guesses: Array,
-    results: Object,
     won: Boolean,
     myAddress: String
   },
@@ -44,14 +43,13 @@ export default {
   },
   methods: {
     colorCode(guess) {
-      if (!this.results[guess]) { return guess; }
-
       let colorCodedString = '<span>';
       const correctSpan = '<span style="color: rgb(3, 174, 0);; border-bottom: 2px solid rgb(3, 174, 0);">';
       const yellowSpan = '<span style="color: DarkGoldenRod; border-bottom: 2px solid DarkGoldenRod">';
       const greySpan = '<span style="color: Grey; font-weight: normal;">';
       const closeSpan = '</span>';
-      const result = `${this.results[guess]}`;
+
+      const result = `${this.guesses.find(g => g.guess === guess).result}`;
 
       for (let i = 0; i < guess.length; i++) {
         if (result[i] === '3') {

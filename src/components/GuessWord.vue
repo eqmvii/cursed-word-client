@@ -5,9 +5,8 @@
     <GuessList
       :currentGuess="currentGuess"
       :guesses="guesses"
-      :otherPlayerGuesses="[]"
-      :results="results"
       :won="victory"
+      myAddress="self"
     />
     <br />
     <SpinningIcon v-if="awaitingResult" />
@@ -16,7 +15,7 @@
       <ResetButton @reset="resetGame"/>
       <br />
     </div>
-    <Keyboard :guesses="guesses" :results="results" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
+    <Keyboard :guesses="guesses" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
   </div>
 </template>
 
@@ -43,7 +42,6 @@ export default {
     return {
       currentGuess: '',
       guesses: [],
-      results: {},
       yellowLetters: [],
       greenLetters: [],
       inputLocked: false,
@@ -74,9 +72,8 @@ export default {
   },
   methods: {
     submitGuess: function() {
-      this.guesses.push({ guess: this.currentGuess, guesser: 'self' });
       let respCode = this.guessResponse();
-      this.results[this.currentGuess] = respCode;
+      this.guesses.push({ guess: this.currentGuess, guesser: 'self', result: respCode });
       let numGreens = 0;
 
       for (let i = 0; i < this.currentGuess.length; i++) {
@@ -122,7 +119,6 @@ export default {
     resetGame: function() {
       this.currentGuess = '';
       this.guesses = [];
-      this.results = {};
       this.yellowLetters = [];
       this.greenLetters = [];
       this.inputLocked = false;
