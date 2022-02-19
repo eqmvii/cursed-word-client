@@ -6,6 +6,10 @@ sorted-word-list.json
 # local seeding
 secret-commands.md
 
+# deploy bundles
+awsbundle/
+awsbundle.*
+
 .DS_Store
 node_modules
 
