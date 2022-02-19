@@ -9,6 +9,8 @@
 * Read more about HD wallets and nemonics: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 * Save randomized dictionary to a file
 * Do I need vue router and routes? For rules, non-blockchain version, NFT display, etc.?
+* Modal
+* Make NFT contract enumberable so we can see which NFTs are owned by the player
 
 
 # nice to have

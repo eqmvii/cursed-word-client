@@ -26,6 +26,15 @@
     <Keyboard :guesses="guesses" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
     <EnableEthereumButton @metamask-connected="connect"/>
     <p v-if="this.address && this.ethBalance">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} <strong>|</strong> {{ this.ethBalance }} Eth <strong>|</strong> {{ this.cwcBalance }} CW Coins </p>
+
+    <!-- TODO: update this to fetch needed data, right now this is only for testing -->
+    <ModalElement v-if="this.address && this.guesses && this.wordId && this.guesses.length > 0">
+      <WordTrophy
+        :guesses="this.guesses"
+        :wordId="this.wordId"
+        :myAddress="this.address"
+      />
+    </ModalElement>
   </div>
 </template>
 
@@ -43,17 +52,21 @@ const WEI_IN_AN_ETHER = 1000000000000000000;
 import EnableEthereumButton from './EnableEthereumButton';
 import GuessList from './GuessList';
 import Keyboard from './Keyboard';
+import ModalElement from './ModalElement';
 import ResetButton from './ResetButton';
 import SpinningIcon from './SpinningIcon';
+import WordTrophy from './WordTrophy';
 
 export default {
   name: 'CursedWord',
   components: {
     GuessList,
     Keyboard,
+    ModalElement,
     EnableEthereumButton,
     ResetButton,
-    SpinningIcon
+    SpinningIcon,
+    WordTrophy
   },
   data() {
     return {

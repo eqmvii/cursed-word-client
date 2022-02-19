@@ -97,29 +97,29 @@ export default {
 
 <style scoped>
 
-  .guess-list {
-    font-family: 'Courier New', monospace;
+.guess-list {
+  font-family: 'Courier New', monospace;
 
-    width: 90%;
-  }
+  width: 90%;
+}
 
-  .guessrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.guessrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .left {
-    width: 25%;
-    text-align: right;
-  }
+.left {
+  width: 25%;
+  text-align: right;
+}
 
-  .right {
-    width: 25%;
-  }
+.right {
+  width: 25%;
+}
 
-  .center {
-    width: 40%;
-  }
+.center {
+  width: 40%;
+}
 
 </style>
