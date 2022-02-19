@@ -10,6 +10,7 @@ const SECRET = require('./secret.json');
 const ORDERED_WORD_OBJECT = require('./sorted-word-list.json');
 const WEI_IN_AN_ETHER = 1000000000000000000;
 const POLL_RATE = 1.5 * 1000; // 1 second ; infura connection only allows 100,000 request/day on free tier SO.
+const LOG_BALANCE = ACCOUNT.network === 'localhost';
 
 const COIN_REWARD = '10'; // string for big number conversion
 
@@ -52,13 +53,17 @@ const init = async () => {
   if (guessesRespondedTo.length > 0 ) { console.log(`\nAlready responded to ${guessesRespondedTo.join(", ")} for this wordId`) }
 
   let responseFunction = async () =>  {
-    let balance = await web3.eth.getBalance(connectedAccount.address);
+    // Infura tracks total requests, and this is like half of them, so cut it in prod
+    let balance = 0;
+    if (LOG_BALANCE) {
+      balance = await web3.eth.getBalance(connectedAccount.address);
+    }
 
     // hard coded filter for word number for now. Eventually get from public variable in contract.
     let events = await connectedContract.getPastEvents('GuessReceived', { fromBlock: 0, filter: { id: wordNumber } });
 
     let rightNow = new Date();
-    console.log(`${rightNow.getHours()}:${rightNow.getMinutes()}:${rightNow.getSeconds()} | ${ACCOUNT.network} ${connectedAccount.address.substring(0, 6)} | Word ${wordNumber} ${theSecretWord} | Oracle Balance ${(balance / WEI_IN_AN_ETHER).toPrecision(5) } | ${events.length} Guesses`);
+    console.log(`${rightNow.getHours()}:${rightNow.getMinutes()}:${rightNow.getSeconds()} | ${ACCOUNT.network} ${connectedAccount.address.substring(0, 6)} | Word ${wordNumber} ${theSecretWord} | Balance (${LOG_BALANCE}) ${(balance / WEI_IN_AN_ETHER).toPrecision(5) } | ${events.length} Guesses`);
 
     // LOL forEach can't be usesd with async/await patterns. TIL: https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
     // events.forEach(async (event) => {
