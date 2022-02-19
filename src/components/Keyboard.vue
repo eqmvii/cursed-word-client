@@ -43,7 +43,7 @@ export default {
     allGuessedLetters: function() {
       if (!this.guesses) { return ""; }
       // no need to remove duplicates for our checking
-      return this.guesses.join("");
+      return this.guesses.map(g => g.guess).join("");
     }
   },
   methods: {
