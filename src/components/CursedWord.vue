@@ -6,13 +6,12 @@
       v-if="address"
       :currentGuess="currentGuess"
       :guesses="guesses"
-      :otherPlayerGuesses="otherPlayerGuesses"
       :results="results"
       :won="victory"
+      :myAddress="address"
     />
     <br />
     <SpinningIcon v-if="awaitingResult" />
-    <p v-if="address && this.otherPlayerGuesses.length > 0">Guesses ending in <strong>*</strong> were submitted by another player</p>
     <div v-if="victory">
       <br />
       <h1>You won!</h1>
@@ -27,7 +26,7 @@
     </div>
     <Keyboard :guesses="guesses" :results="results" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
     <EnableEthereumButton @metamask-connected="connect"/>
-    <p v-if="this.address && this.ethBalance">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} | {{ this.ethBalance }} Eth | {{ this.cwcBalance }} CWCoin </p>
+    <p v-if="this.address && this.ethBalance">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} <strong>|</strong> {{ this.ethBalance }} Eth <strong>|</strong> {{ this.cwcBalance }} CW Coins </p>
   </div>
 </template>
 
@@ -61,7 +60,6 @@ export default {
     return {
       currentGuess: '',
       guesses: [],
-      otherPlayerGuesses: [],
       connectedContract: null,
       connectedCoinContract: null,
       web3: null,
@@ -126,11 +124,7 @@ export default {
             let stringifiedReceivedCodedResult = `${receivedCodedResult}`;
             let guesserAddress = event.returnValues.guesser.toLowerCase();
             this.results[receivedWordGuess] = event.returnValues.result;
-            this.guesses.push(receivedWordGuess);
-
-            if (this.address != guesserAddress) {
-              this.otherPlayerGuesses.push(receivedWordGuess);
-            }
+            this.guesses.push({ guess: receivedWordGuess, guesser: event.returnValues.guesser });
 
             let numGreens = 0;
 
@@ -146,8 +140,8 @@ export default {
 
             this.resultsReceived.push(event.returnValues.guessNumber);
 
-            // If the returned result is the current guess, clear it out
-            if (this.guesses.includes(this.currentGuess)) {
+            // If I just got the result from MY guess, let me guess again
+            if (this.currentGuess === receivedWordGuess && this.address.toLowerCase() === guesserAddress) {
               this.currentGuess = '';
             }
 
@@ -200,7 +194,6 @@ export default {
     resetGame: async function() {
       this.currentGuess = '';
       this.guesses = [];
-      this.otherPlayerGuesses = [];
       this.results = {};
       this.yellowLetters = [];
       this.greenLetters = [];
@@ -214,8 +207,8 @@ export default {
       this.startNewGame();
     },
     updateBalances: async function() {
-      this.ethBalance = ((await this.web3.eth.getBalance(this.address)) / WEI_IN_AN_ETHER).toPrecision(4);
-      this.cwcBalance = ((await this.connectedCoinContract.methods.balanceOf(this.address).call()) / WEI_IN_AN_ETHER).toPrecision(4);
+      this.ethBalance = ((await this.web3.eth.getBalance(this.address)) / WEI_IN_AN_ETHER).toPrecision(5);
+      this.cwcBalance = Math.round(((await this.connectedCoinContract.methods.balanceOf(this.address).call()) / WEI_IN_AN_ETHER));
     },
   }
 }

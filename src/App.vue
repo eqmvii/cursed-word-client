@@ -20,6 +20,7 @@ export default {
   },
   data() {
     return {
+      // appMode: 'sane',
       appMode: 'blockchain',
       showToggle: false,
     }

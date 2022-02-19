@@ -74,7 +74,7 @@ export default {
   },
   methods: {
     submitGuess: function() {
-      this.guesses.push(this.currentGuess);
+      this.guesses.push({ guess: this.currentGuess, guesser: 'self' });
       let respCode = this.guessResponse();
       this.results[this.currentGuess] = respCode;
       let numGreens = 0;

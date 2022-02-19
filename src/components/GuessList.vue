@@ -1,9 +1,27 @@
 <template>
   <div class="guess-list">
-    <h1 v-for="oldGuess in guesses" :key="oldGuess" v-html="colorCode(oldGuess)">
-    </h1>
-    <h1 v-if="currentGuess.length > 0">{{ spacify(currentGuess) }} {{ extraUnderscores }}&nbsp;</h1>
-    <h1 v-else-if="!won">_ _ _ _ _&nbsp;</h1>
+    <div v-for="oldGuess in guesses" :key="oldGuess" class="guessrow">
+      <div class="left guesscol">
+        <p>{{ guessAddress(oldGuess) }}</p>
+      </div>
+      <div class="center guesscol">
+        <h1  v-html="colorCode(oldGuess.guess)" />
+      </div>
+      <div class="right guesscol">
+      </div>
+    </div>
+    <!-- <h1 v-for="oldGuess in guesses" :key="oldGuess" v-html="colorCode(oldGuess)">
+    </h1> -->
+    <div class="guessrow">
+      <div class="left guesscol"></div>
+      <div class="center guesscol">
+        <h1 v-if="currentGuess.length > 0">{{ spacify(currentGuess) }} {{ extraUnderscores }}</h1>
+        <h1 v-else-if="!won">_ _ _ _ _</h1>
+      </div>
+      <div class="right guesscol">
+        <!-- TODO: implement <button>Submit!</button> -->
+      </div>
+    </div>
   </div>
 </template>
 
@@ -14,9 +32,9 @@ export default {
   props: {
     currentGuess: String,
     guesses: Array,
-    otherPlayerGuesses: Array,
     results: Object,
-    won: Boolean
+    won: Boolean,
+    myAddress: String
   },
   computed: {
     extraUnderscores: function () {
@@ -28,19 +46,12 @@ export default {
     colorCode(guess) {
       if (!this.results[guess]) { return guess; }
 
-      // eslint-disable-next-line
-      let isNotMine = this.otherPlayerGuesses.includes(guess);
-
-      // let colorCodedString = `<span ${this.otherPlayerGuesses.includes(guess) ? 'style="border: 1px solid black"' : ''}>`;
       let colorCodedString = '<span>';
       const correctSpan = '<span style="color: rgb(3, 174, 0);; border-bottom: 2px solid rgb(3, 174, 0);">';
       const yellowSpan = '<span style="color: DarkGoldenRod; border-bottom: 2px solid DarkGoldenRod">';
       const greySpan = '<span style="color: Grey; font-weight: normal;">';
       const closeSpan = '</span>';
-
-
       const result = `${this.results[guess]}`;
-
 
       for (let i = 0; i < guess.length; i++) {
         if (result[i] === '3') {
@@ -59,10 +70,9 @@ export default {
           colorCodedString += closeSpan;
           colorCodedString += " ";
         }
-        // console.log(colorCodedString);
       }
 
-      return colorCodedString + `${isNotMine ? '*' : '&nbsp;' }</span>`;
+      return colorCodedString;
     },
     spacify(word) {
       let spacedWord = '';
@@ -73,6 +83,15 @@ export default {
       }
 
       return spacedWord;
+    },
+    guessAddress(guess) {
+      if (guess.guesser && guess.guesser.toLowerCase() == this.myAddress.toLowerCase()) {
+        return '';
+      } else if (guess.guesser && guess.guesser) {
+        return `from ${guess.guesser.substring(0, 5) }...${guess.guesser.slice(-4)}`;
+      }
+
+      return '';
     }
   }
 }
@@ -82,6 +101,27 @@ export default {
 
   .guess-list {
     font-family: 'Courier New', monospace;
+
+    width: 90%;
+  }
+
+  .guessrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .left {
+    width: 25%;
+    text-align: right;
+  }
+
+  .right {
+    width: 25%;
+  }
+
+  .center {
+    width: 40%;
   }
 
 </style>
