@@ -89,9 +89,11 @@ export default {
     }
   },
   async mounted() {
-    // Listen for keystrokes
-    // TODO: remove this in beforeDestroy if implementing toggle
-    window.addEventListener("keydown", this.handleKeyDown);
+    window.addEventListener('keydown', this.handleKeyDown);
+  },
+  beforeUnmount() {
+    console.log('beforeUnmount');
+    window.removeEventListener('keydown', this.handleKeyDown);
   },
   methods: {
     connect: async function() {

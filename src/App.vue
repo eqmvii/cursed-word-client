@@ -87,7 +87,11 @@ export default {
 }
 
 .navbar {
+  /* width: 50%; */
+  margin: 0px;
+  padding: 0px 0px 10px 0px;
 
+  /* border-bottom: 1px solid black; */
 }
 
 .navbar li {
