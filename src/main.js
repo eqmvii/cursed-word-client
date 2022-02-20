@@ -1,10 +1,13 @@
 import { createApp, h } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
-import App from './App.vue';
+import App from './App';
 
+import AboutElement from './components/AboutElement';
 import CursedWord from './components/CursedWord';
 import GuessWord from './components/GuessWord';
+
+// TODO ERIC: Clean up file; make a route for an NFT that takes the appropriate param
 
 // 1. Define route components.
 // These can be imported from other files
@@ -17,6 +20,7 @@ import GuessWord from './components/GuessWord';
 const routes = [
   { path: '/', component: CursedWord },
   { path: '/classic', component: GuessWord },
+  { path: '/about', component: AboutElement },
   // { path: '/about', component: About },
 ]
 

@@ -1,4 +1,10 @@
 <template>
+  <!-- TODO: Style; move to own component? -->
+  <ul class="navbar">
+    <li><router-link to="/">Home</router-link></li>
+    <li><router-link to="/classic">Classic</router-link></li>
+    <li><router-link to="/about">About</router-link></li>
+  </ul>
   <router-view></router-view>
   <!-- <CursedWord v-if="appMode == 'blockchain' && !showToggle"/>
   <GuessWord v-if="appMode == 'sane' && !showToggle"/>
@@ -12,14 +18,14 @@
 <script>
 // import CursedWord from './components/CursedWord.vue';
 // import GuessWord from './components/GuessWord.vue';
-// import RouterLink from 'vue-router';
+import RouterLink from 'vue-router';
 
 export default {
   name: 'App',
   components: {
     // CursedWord,
     // GuessWord,
-    // RouterLink
+    RouterLink
   },
   data() {
     return {
@@ -78,6 +84,17 @@ export default {
   box-shadow: 0 2px 4px -1px rgba(0,0,0,.2),0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12);
   cursor: pointer;
   margin: 8px;
+}
+
+.navbar {
+
+}
+
+.navbar li {
+  list-style-type: none;
+  display: inline;
+
+  padding: 8px;
 }
 
 </style>
