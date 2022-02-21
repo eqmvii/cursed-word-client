@@ -27,10 +27,14 @@
     <p v-if="this.address && this.ethBalance">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} <strong>|</strong> {{ this.ethBalance }} Eth <strong>|</strong> {{ this.cwcBalance }} CW Coins </p>
     <h2>My NFTs:</h2>
     <ul>
-      <li v-for="token in myNFTs" :key="token.id">({{ token.id }}) <a :href="token.uri">{{ token.uri }}</a></li>
+      <li v-for="token in myNFTs" :key="token.id">({{ token.id }}) <button @click="openModal(token.id)">|{{ token.id }}|</button><a :href="token.uri">{{ token.uri }}</a></li>
     </ul>
     <!-- TODO: update this to fetch needed data, right now this is only for testing -->
-    <ModalElement v-if="this.address && this.guesses && this.wordId && this.guesses.length > 0">
+    <ModalElement
+      :open="this.modalOpen"
+      @closeModal="closeModal"
+      v-if="this.address && this.guesses && this.wordId && this.guesses.length > 0"
+    >
       <WordTrophy
         :guesses="this.guesses"
         :wordId="this.wordId"
@@ -91,6 +95,7 @@ export default {
       cwcBalance: null,
       gameLoopInterval: null,
       myNFTs: [],
+      modalOpen: false,
     }
   },
   async mounted() {
@@ -222,6 +227,7 @@ export default {
       this.victory = false;
       this.defeat = false;
       this.wordId = null;
+      this.modalOpen = false;
 
       this.startNewGame();
     },
@@ -239,6 +245,14 @@ export default {
 
       this.myNFTs = theNFTs;
     },
+    openModal(tokenId) {
+      console.log(tokenId);
+      this.modalOpen = true;
+    },
+    closeModal() {
+      // TODO: Consider reworking logic to read event and not close if clicking into modal content
+      this.modalOpen = false;
+    }
   }
 }
 </script>

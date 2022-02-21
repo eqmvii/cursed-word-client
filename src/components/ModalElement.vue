@@ -1,7 +1,7 @@
 <template>
-  <div class="modal">
+  <div class="modal" :class="{ open: open }" @click="$emit('closeModal', $event)">
     <div class="modal-window">
-      <span class="close">&times;</span>
+      <span class="close" @click="$emit('closeModal', $event)">&times;</span>
       <br />
       <div class="modal-content">
         <slot></slot>
@@ -14,6 +14,9 @@
 <script>
 export default {
   name: 'ModalElement',
+  props: {
+    open: Boolean,
+  },
   methods: {}
 }
 </script>
@@ -34,6 +37,10 @@ export default {
   overflow: auto; /* Enable scroll if needed */
   background-color: rgb(0,0,0); /* Fallback color */
   background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.open {
+  display: block;
 }
 
 .modal-window {
