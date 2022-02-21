@@ -25,11 +25,11 @@
     <KeyboardElement :guesses="guesses" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
     <EnableEthereumButton @metamask-connected="connect"/>
     <p v-if="this.address && this.ethBalance">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} <strong>|</strong> {{ this.ethBalance }} Eth <strong>|</strong> {{ this.cwcBalance }} CW Coins </p>
-    <h2>My NFTs:</h2>
-    <ul>
-      <li v-for="token in myNFTs" :key="token.id">({{ token.id }}) <button @click="openModal(token.id)">|{{ token.id }}|</button><router-link :to="'/nft/' + token.id">Trophy {{ token.id }}</router-link><a :href="token.uri">{{ token.uri }}</a></li>
-    </ul>
-    <!-- TODO: update this to fetch needed data, right now this is only for testing -->
+    <div v-if="this.myNFTs && this.myNFTs.length > 0">
+      <br />
+      <h2>My Trophy NFTs</h2>
+      <TrophyList :trophies="this.myNFTs" @openModal="openModal"/>
+    </div>
     <ModalElement
       :open="this.modalOpen"
       @closeModal="closeModal"
@@ -61,8 +61,8 @@ import GuessList from './GuessList';
 import KeyboardElement from './KeyboardElement';
 import ModalElement from './ModalElement';
 import ResetButton from './ResetButton';
-import RouterLink from 'vue-router';
 import SpinningIcon from './SpinningIcon';
+import TrophyList from './TrophyList';
 import WordTrophy from './WordTrophy';
 
 export default {
@@ -73,8 +73,8 @@ export default {
     ModalElement,
     EnableEthereumButton,
     ResetButton,
-    RouterLink,
     SpinningIcon,
+    TrophyList,
     WordTrophy
   },
   data() {
