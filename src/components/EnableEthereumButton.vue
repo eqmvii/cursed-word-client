@@ -11,7 +11,7 @@ export default {
   data() {
     return {
       disabled: false,
-      errorText: 'No MetaMask detected. Install metamask to connect to Cursed Word.',
+      errorText: '',
       showButton: false
     }
   },

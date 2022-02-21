@@ -36,8 +36,8 @@
       v-if="this.address && this.guesses && this.wordId && this.guesses.length > 0"
     >
       <WordTrophy
-        :guesses="this.guesses"
-        :wordId="this.wordId"
+        :guesses="this.modalData.guesses"
+        :wordId="this.modalData.wordId"
         :myAddress="this.address"
       />
     </ModalElement>
@@ -96,6 +96,7 @@ export default {
       gameLoopInterval: null,
       myNFTs: [],
       modalOpen: false,
+      modalData: {},
     }
   },
   async mounted() {
@@ -228,6 +229,7 @@ export default {
       this.defeat = false;
       this.wordId = null;
       this.modalOpen = false;
+      this.modalData = {},
 
       this.startNewGame();
     },
@@ -245,8 +247,27 @@ export default {
 
       this.myNFTs = theNFTs;
     },
-    openModal(tokenId) {
+    async openModal(tokenId) {
       console.log(tokenId);
+      this.modalData.guesses = [];
+      this.modalData.wordId = tokenId;
+
+      let events = await this.connectedContract.getPastEvents('GuessResult', { fromBlock: 0, filter: { id: tokenId } });
+
+      for (const event of events) {
+        let receivedWordGuess = this.web3.utils.hexToUtf8(event.returnValues.wordGuessed).toUpperCase();
+        let receivedCodedResult = event.returnValues.result;
+        this.modalData.guesses.push({
+          guess: receivedWordGuess,
+          guesser: event.returnValues.guesser,
+          result: receivedCodedResult,
+          wordId: event.returnValues.id,
+          guessNumber: event.returnValues.guessNumber
+        });
+      }
+
+      console.log(this.modalData.guesses);
+
       this.modalOpen = true;
     },
     closeModal() {

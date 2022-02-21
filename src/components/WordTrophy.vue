@@ -7,6 +7,8 @@
       :won="true"
       :myAddress="myAddress"
     />
+    <br />
+    <p>Winning Guess By:</p>
     <h3>{{ this.myAddress }}</h3>
   </div>
 </template>
