@@ -97,6 +97,7 @@ const init = async () => {
           });
           console.log(`\n=== Response Tx sent for ${responseResult.gasUsed} gas | Hash ${responseResult.transactionHash} ===`);
 
+          let guessedWordNumber = wordNumber;
           // This guess won, the smart contract will increment and so will we
           // In theory this will only first once because even if multiple guesses come in on the same word number,
           // we will increment wordNumber on the first we see not check any events from that wordNumber again.
@@ -122,12 +123,12 @@ const init = async () => {
 
                       // Send the winner an NFT for their winning guess
             try {
-              await connectedNFTContract.methods.safeMint(event.returnValues.guesser, wordNumber, `nft/${wordNumber}`).send({
+              await connectedNFTContract.methods.safeMint(event.returnValues.guesser, guessedWordNumber, `nft/${guessedWordNumber}`).send({
                 from: ACCOUNT.oracleAddress,
                 gas: 250_000,
                 value: 0, // value to xfer in wei
               });
-              console.log(`\n=== Sent NFT Trophy #${wordNumber} to winner!\n`);
+              console.log(`\n=== Sent NFT Trophy #${guessedWordNumber} to winner!\n`);
             } catch (e) {
               console.log('\n=== Rejected NFT mint promise\n\n', e);
             }

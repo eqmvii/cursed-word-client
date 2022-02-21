@@ -99,6 +99,7 @@ export default {
   beforeUnmount() {
     console.log('beforeUnmount');
     window.removeEventListener('keydown', this.handleKeyDown);
+    clearInterval(this.gameLoopInterval);
   },
   methods: {
     connect: async function() {
@@ -233,8 +234,6 @@ export default {
       let theNFTs = [];
       for (let i = 0; i < myNFTBalance; i++) {
         let tokenId = await this.connectedNFTContract.methods.tokenOfOwnerByIndex(this.address, i).call();
-        console.log(typeof tokenId);
-
         theNFTs.push({ id: tokenId, uri: await this.connectedNFTContract.methods.tokenURI(tokenId).call() });
       }
 
