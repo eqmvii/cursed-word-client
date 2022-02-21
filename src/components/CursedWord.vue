@@ -3,7 +3,6 @@
     <h1>Cursed Word {{ this.wordId }}</h1>
     <br/>
     <GuessList
-      v-if="address"
       :currentGuess="currentGuess"
       :guesses="guesses"
       :won="victory"
@@ -26,7 +25,10 @@
     <KeyboardElement :guesses="guesses" :yellowLetters="yellowLetters" :greenLetters="greenLetters" />
     <EnableEthereumButton @metamask-connected="connect"/>
     <p v-if="this.address && this.ethBalance">{{ this.address.substring(0, 5) }}...{{ this.address.slice(-4)}} <strong>|</strong> {{ this.ethBalance }} Eth <strong>|</strong> {{ this.cwcBalance }} CW Coins </p>
-
+    <h2>My NFTs:</h2>
+    <ul>
+      <li v-for="token in myNFTs" :key="token.id">({{ token.id }}) <a :href="token.uri">{{ token.uri }}</a></li>
+    </ul>
     <!-- TODO: update this to fetch needed data, right now this is only for testing -->
     <ModalElement v-if="this.address && this.guesses && this.wordId && this.guesses.length > 0">
       <WordTrophy
@@ -44,6 +46,7 @@ import Web3 from 'web3';
 // Compiled smart contract code for interaction
 const CURSED_WORD_GAME_CONTRACT = require('../../contracts/TestCWGU.json');
 const CURSED_WORD_COIN_CONTRACT = require('../../contracts/CWCoin.json');
+const CURSED_WORD_NFT_CONTRACT = require('../../contracts/CursedWordTrophyV2.json');
 const ACCOUNT = require('../../account.json');
 
 // eslint-disable-next-line
@@ -74,6 +77,7 @@ export default {
       guesses: [],
       connectedContract: null,
       connectedCoinContract: null,
+      connectedNFTContract: null,
       web3: null,
       yellowLetters: [],
       greenLetters: [],
@@ -86,6 +90,7 @@ export default {
       ethBalance: null,
       cwcBalance: null,
       gameLoopInterval: null,
+      myNFTs: [],
     }
   },
   async mounted() {
@@ -100,6 +105,7 @@ export default {
       this.web3 = new Web3(window.ethereum);
       this.connectedContract = new this.web3.eth.Contract(CURSED_WORD_GAME_CONTRACT.abi, ACCOUNT.deployedGameAddress);
       this.connectedCoinContract = new this.web3.eth.Contract(CURSED_WORD_COIN_CONTRACT.abi, ACCOUNT.deployedCoinAddress);
+      this.connectedNFTContract = new this.web3.eth.Contract(CURSED_WORD_NFT_CONTRACT.abi, ACCOUNT.deployedNFTAddress);
       this.address = (await window.ethereum.request({ method: 'eth_requestAccounts' }))[0].toLowerCase();
 
       this.startNewGame();
@@ -221,6 +227,18 @@ export default {
     updateBalances: async function() {
       this.ethBalance = ((await this.web3.eth.getBalance(this.address)) / WEI_IN_AN_ETHER).toPrecision(5);
       this.cwcBalance = Math.round(((await this.connectedCoinContract.methods.balanceOf(this.address).call()) / WEI_IN_AN_ETHER));
+
+      // Is this too expensive to do every cycle?
+      let myNFTBalance = await this.connectedNFTContract.methods.balanceOf(this.address).call();
+      let theNFTs = [];
+      for (let i = 0; i < myNFTBalance; i++) {
+        let tokenId = await this.connectedNFTContract.methods.tokenOfOwnerByIndex(this.address, i).call();
+        console.log(typeof tokenId);
+
+        theNFTs.push({ id: tokenId, uri: await this.connectedNFTContract.methods.tokenURI(tokenId).call() });
+      }
+
+      this.myNFTs = theNFTs;
     },
   }
 }

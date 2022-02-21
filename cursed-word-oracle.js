@@ -4,7 +4,7 @@
 const Web3 = require('web3');
 const CURSED_WORD_CONTRACT = require('./contracts/TestCWGU.json');
 const CURSED_WORD_COIN_CONTRACT = require('./contracts/CWCoin.json');
-const CURSED_WORD_TROPHY_CONTRACT = require('./contracts/CWTrophy.json');
+const CURSED_WORD_TROPHY_CONTRACT = require('./contracts/CursedWordTrophyV2.json');
 const ACCOUNT = require('./account.json');
 const SECRET = require('./secret.json');
 const ORDERED_WORD_OBJECT = require('./sorted-word-list.json');
@@ -122,7 +122,7 @@ const init = async () => {
 
                       // Send the winner an NFT for their winning guess
             try {
-              await connectedNFTContract.methods.safeMint(event.returnValues.guesser, wordNumber).send({
+              await connectedNFTContract.methods.safeMint(event.returnValues.guesser, wordNumber, `nft/${wordNumber}`).send({
                 from: ACCOUNT.oracleAddress,
                 gas: 250_000,
                 value: 0, // value to xfer in wei

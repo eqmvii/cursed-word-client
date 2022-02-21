@@ -1,6 +1,6 @@
 <template>
-  <div v-if="showButton">
-    <button :disabled="disabled" class="enable-ethereum-button" @click="connect">Enable Ethereum</button>
+  <div>
+    <button v-if="showButton" :disabled="disabled" class="enable-ethereum-button" @click="connect">Enable Ethereum</button>
     <p v-if="errorText" class="error-text">{{ this.errorText }}</p>
   </div>
 </template>
@@ -11,7 +11,7 @@ export default {
   data() {
     return {
       disabled: false,
-      errorText: null,
+      errorText: 'No MetaMask detected. Install metamask to connect to Cursed Word.',
       showButton: false
     }
   },
@@ -21,8 +21,9 @@ export default {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
       if (accounts && accounts.length > 0) {
-        this.$emit('metamaskConnected');
+        this.errorText = '';
         this.showButton = false;
+        this.$emit('metamaskConnected');
       } else {
         this.errorText = "Something went wrong.";
         this.disabled = false;
@@ -34,6 +35,7 @@ export default {
       this.showButton = true;
     } else if (typeof window.ethereum !== 'undefined') {
       // We're allready connected
+      this.errorText = '';
       this.$emit('metamaskConnected');
     } else {
       this.disabled = true;
