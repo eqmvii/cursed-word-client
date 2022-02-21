@@ -6,6 +6,7 @@ import App from './App';
 import AboutElement from './components/AboutElement';
 import CursedWord from './components/CursedWord';
 import GuessWord from './components/GuessWord';
+import TrophyPage from './components/TrophyPage';
 
 // TODO ERIC: Clean up file; make a route for an NFT that takes the appropriate param
 
@@ -21,6 +22,7 @@ const routes = [
   { path: '/', component: CursedWord },
   { path: '/classic', component: GuessWord },
   { path: '/about', component: AboutElement },
+  { path: '/nft/:id', component: TrophyPage },
   // { path: '/about', component: About },
 ]
 
