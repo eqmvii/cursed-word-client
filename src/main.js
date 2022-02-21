@@ -31,6 +31,8 @@ const routes = [
 // keep it simple for now.
 const router = createRouter({
   // 4. Provide the history implementation to use. We are using the hash history for simplicity here.
+  // TODO: If deploying with our own sever, change to createWebHistory and add a fallback route that serves index.html
+  // so we can avoid the ugly hash routes
   history: createWebHashHistory(),
   routes, // short for `routes: routes`
 })

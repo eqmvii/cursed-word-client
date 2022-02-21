@@ -9,7 +9,7 @@
     />
     <br />
     <p>Winning Guess By:</p>
-    <h3>{{ this.myAddress }}</h3>
+    <h3>{{ this.winningAddress }}</h3>
   </div>
 </template>
 
@@ -25,8 +25,9 @@ export default {
   },
   props: {
     guesses: Array,
-    wordId: String,
     myAddress: String,
+    wordId: String,
+    winningAddress: String,
   },
   computed: {
     letterColorObject: function() {

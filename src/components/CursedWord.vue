@@ -36,8 +36,9 @@
     >
       <WordTrophy
         :guesses="this.modalData.guesses"
-        :wordId="this.modalData.wordId"
         :myAddress="this.address"
+        :wordId="this.modalData.wordId"
+        :winningAddress="this.modalData.winningAddress"
       />
     </ModalElement>
   </div>
@@ -249,7 +250,6 @@ export default {
       this.myNFTs = theNFTs;
     },
     async openModal(tokenId) {
-      console.log(tokenId);
       this.modalData.guesses = [];
       this.modalData.wordId = tokenId;
 
@@ -265,9 +265,11 @@ export default {
           wordId: event.returnValues.id,
           guessNumber: event.returnValues.guessNumber
         });
-      }
 
-      console.log(this.modalData.guesses);
+        if (receivedCodedResult === '33333') {
+          this.modalData.winningAddress = event.returnValues.guesser
+        }
+      }
 
       this.modalOpen = true;
     },

@@ -3,8 +3,9 @@
     <WordTrophy
       v-if="this.wordId && this.guesses.length > 0 && this.winningAddress"
       :guesses="this.guesses"
+      :myAddress="this.address"
       :wordId="this.wordId"
-      :myAddress="this.winningAddress"
+      :winningAddress="this.winningAddress"
     />
     <br />
     <EnableEthereumButton @metamask-connected="connect"/>
@@ -30,13 +31,13 @@ export default {
   },
   data() {
     return {
-      guesses: [],
+      address: null,
       connectedContract: null,
       connectedNFTContract: null,
+      guesses: [],
       web3: null,
-      wordId: null,
-      address: null,
       winningAddress: null,
+      wordId: null
     }
   },
   mounted() {
