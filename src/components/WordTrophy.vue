@@ -1,6 +1,6 @@
 <template>
   <div class="trophy">
-    <h1>Word #{{ this.wordId }}</h1>
+    <h1>Word {{ this.wordId }}</h1>
     <GuessList
       :currentGuess="''"
       :guesses="guesses"
@@ -8,8 +8,7 @@
       :myAddress="myAddress"
     />
     <br />
-    <p>Winning Guess By:</p>
-    <h3>{{ this.winningAddress }}</h3>
+    <p>🏆 {{ this.winningAddress }} 🏆</p>
   </div>
 </template>
 
@@ -69,7 +68,7 @@ export default {
   justify-content: center;
   flex-direction: column;
 
-  width: 500px;
+  width: 800px;
 }
 
 </style>

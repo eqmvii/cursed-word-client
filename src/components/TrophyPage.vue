@@ -40,9 +40,6 @@ export default {
       wordId: null
     }
   },
-  mounted() {
-    console.log(this.$route.params.id);
-  },
   methods: {
     connect: async function() {
       this.web3 = new Web3(window.ethereum);
@@ -53,7 +50,6 @@ export default {
       this.wordId = this.$route.params.id;
 
       let events = await this.connectedContract.getPastEvents('GuessResult', { fromBlock: 0, filter: { id: this.wordId } });
-      console.log(events);
       for (const event of events) {
         let receivedWordGuess = this.web3.utils.hexToUtf8(event.returnValues.wordGuessed).toUpperCase();
         let receivedCodedResult = event.returnValues.result;
@@ -69,8 +65,6 @@ export default {
           this.winningAddress = event.returnValues.guesser
         }
       }
-
-      console.log(this.guesses);
     },
   }
 }

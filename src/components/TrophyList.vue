@@ -45,8 +45,7 @@ export default {
 
 .trophy-list__button {
   width: 130px;
-
-  background-color: #037dd6;
+  background-color: #234d6c;
   border: none;
   color: #fff;
   padding: 15px 32px;

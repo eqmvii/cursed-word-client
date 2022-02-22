@@ -8,6 +8,7 @@
         <h1  v-html="colorCode(oldGuess.guess)" />
       </div>
       <div class="right guesscol">
+        <div v-if="oldGuess.result === '33333'">🥇</div>
       </div>
     </div>
     <!-- <h1 v-for="oldGuess in guesses" :key="oldGuess" v-html="colorCode(oldGuess)">
@@ -110,16 +111,17 @@ export default {
 }
 
 .left {
-  width: 25%;
+  width: 30%;
   text-align: right;
 }
 
 .right {
-  width: 25%;
+  width: 30%;
+  text-align: left;
 }
 
 .center {
-  width: 40%;
+  width: 35%;
 }
 
 </style>

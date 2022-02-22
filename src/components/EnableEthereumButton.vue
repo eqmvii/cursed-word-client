@@ -34,7 +34,7 @@ export default {
     if (typeof window.ethereum !== 'undefined' && !window.ethereum.selectedAddress) {
       this.showButton = true;
     } else if (typeof window.ethereum !== 'undefined') {
-      // We're allready connected
+      // We're already connected
       this.errorText = '';
       this.$emit('metamaskConnected');
     } else {
