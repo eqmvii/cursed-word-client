@@ -5,17 +5,17 @@
     <div class="row">
       <br />
       <span v-for="letter in rowOne" :key="letter">
-        <span :style="letterStyle(letter)">{{ letter }}</span>&nbsp;
+        <span :class="letterClass(letter)">{{ letter }}</span>&nbsp;
       </span>
     </div>
     <div class="row">
       <span v-for="letter in rowTwo" :key="letter">
-        <span :style="letterStyle(letter)">{{ letter }}</span>&nbsp;
+        <span :class="letterClass(letter)">{{ letter }}</span>&nbsp;
       </span>
     </div>
     <div class="row">
       <span v-for="letter in rowThree" :key="letter">
-        <span :style="letterStyle(letter)">{{ letter }}</span>&nbsp;
+        <span :class="letterClass(letter)">{{ letter }}</span>&nbsp;
       </span>
     </div>
   <br />
@@ -40,35 +40,28 @@ export default {
   },
   computed: {
     allGuessedLetters: function() {
-      if (!this.guesses) { return ""; }
+      if (!this.guesses) { return ''; }
       // no need to remove duplicates for our checking
-      return this.guesses.map(g => g.guess).join("");
+      return this.guesses.map(g => g.guess).join('');
     }
   },
   methods: {
-    // TODO: Refactor into components + classes for a letter, instead of dumb style tags
-    letterStyle(letter) {
+    letterClass(letter) {
       const taken = this.allGuessedLetters || '';
-      let style = { };
 
-      if (taken.includes(letter)) {
-        style.color = 'LightGrey';
-        style.fontWeight = 'normal';
+      if (this.greenLetters.includes(letter)) {
+        return 'green-letter';
       }
 
       if (this.yellowLetters.includes(letter)) {
-        style.color = 'DarkGoldenRod';
-        style.borderBottom = '2px solid DarkGoldenRod';
-        style.fontWeight = 'bold';
+        return 'yellow-letter';
       }
 
-      if (this.greenLetters.includes(letter)) {
-        style.color = 'rgb(3, 174, 0)';
-        style.borderBottom = '2px solid rgb(3, 174, 0)';
-        style.fontWeight = 'bold';
+      if (taken.includes(letter)) {
+        return 'taken-letter';
       }
 
-      return style;
+      return '';
     }
   }
 }
@@ -76,14 +69,31 @@ export default {
 
 <style scoped>
 
-  .keyboard {
-    font-weight: bold;
-    font-size: 32px;
-    font-family: 'Courier New', Courier, monospace;
-  }
+.keyboard {
+  font-weight: bold;
+  font-size: 32px;
+  font-family: 'Courier New', Courier, monospace;
+}
 
-  .row {
-    margin-bottom: 6px;
-  }
+.row {
+  margin-bottom: 6px;
+}
+
+.green-letter {
+  color: rgb(3, 174, 0);
+  border-bottom: 2px solid rgb(3, 174, 0);
+  font-weight: 'bold';
+}
+
+.yellow-letter {
+  color: DarkGoldenRod;
+  border-bottom: 2px solid DarkGoldenRod;
+  font-weight: 'bold';
+}
+
+.taken-letter {
+  font-weight: normal;
+  color: LightGrey;
+}
 
 </style>
