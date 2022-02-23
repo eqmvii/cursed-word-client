@@ -44,6 +44,7 @@ export default {
   },
   methods: {
     colorCode(guess) {
+      // TODO ERIC: Refactor to work the way the keyboard does
       let colorCodedString = '<span>';
       const correctSpan = '<span style="color: rgb(3, 174, 0);; border-bottom: 2px solid rgb(3, 174, 0);">';
       const yellowSpan = '<span style="color: DarkGoldenRod; border-bottom: 2px solid DarkGoldenRod">';
